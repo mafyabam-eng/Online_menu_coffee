@@ -43,6 +43,24 @@
 @keyframes welcomeRise{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes welcomeLoad{to{width:100%}}
 @media(prefers-reduced-motion:reduce){.welcome-screen:before,.welcome-screen:after,.welcome-logo,.welcome-progress span{animation-duration:.01ms!important}}
+
+/* HamrahYar signature — discreet, elegant, and motion-aware */
+.site-footer{align-items:center;flex-wrap:wrap;padding-top:20px;gap:18px}
+.hamrahyar-credit{display:inline-flex;align-items:center;gap:10px;padding:7px 10px 7px 13px;border:1px solid rgba(111,220,172,.17);border-radius:16px;background:linear-gradient(120deg,rgba(31,117,78,.12),rgba(255,255,255,.015));transition:border-color .3s ease,background .3s ease,transform .3s ease;direction:rtl}
+.hamrahyar-credit:hover{border-color:rgba(111,220,172,.48);background:rgba(31,117,78,.16);transform:translateY(-2px)}
+.hy-orbit{position:relative;display:grid;place-items:center;width:32px;height:32px;border:1px solid rgba(111,220,172,.55);border-radius:50%;color:#9be9bd;flex:0 0 auto;animation:hyTurn 12s linear infinite}
+.hy-orbit:before{content:"";position:absolute;inset:4px;border:1px dashed rgba(216,179,106,.65);border-radius:50%}
+.hy-orbit:after{content:"";position:absolute;width:5px;height:5px;top:1px;right:5px;border-radius:50%;background:#f0d99e;box-shadow:0 0 9px #f0d99e}
+.hy-orbit i{position:absolute;width:9px;height:13px;left:5px;bottom:5px;border:1px solid #78d6a0;border-radius:100% 0 100% 0;transform:rotate(-25deg)}
+.hy-orbit b{font-size:12px;font-weight:500;text-shadow:0 0 10px rgba(126,238,178,.7)}
+.hy-copy{display:grid;gap:1px;line-height:1.5}
+.hy-copy small{font-size:9px;color:#9eafa4}
+.hy-copy strong{font-size:11px;font-weight:600;color:#c5f1d7;letter-spacing:.15px}
+.hy-copy em{font-family:"DM Sans",sans-serif;font-size:10px;font-style:normal;color:#8fd8b0;direction:ltr;unicode-bidi:isolate}
+@keyframes hyTurn{to{transform:rotate(360deg)}}
+@media(max-width:520px){.site-footer{justify-content:space-between;gap:13px}.footer-note{order:3;width:100%;text-align:center;padding-top:4px}.hamrahyar-credit{margin-inline-start:auto}}
+@media(prefers-reduced-motion:reduce){.hy-orbit{animation:none}.hamrahyar-credit{transition:none}}
+
 </style>
 </head>
 <body>\n<section class="welcome-screen" id="welcome-screen" aria-label="خوش آمدید">
@@ -90,7 +108,7 @@
     <p class="note"><b>پیش‌نمایش طراحی:</b> نام، توضیحات، قیمت و زمان سرو محصولات فعلاً نمونه هستند و پیش از استفاده واقعی باید با منوی رسمی کافه جایگزین شوند. سبد خرید در این نسخه نمایشی است و هنوز سفارشی به مدیریت ارسال نمی‌کند.</p>
   </section>
 </main>
-<footer class="wrap"><span class="footer-brand">BAMLAND COFFEE</span><span>با عشق برای لحظه‌های خوب طراحی شده</span><span>✦</span></footer>
+<footer class="wrap site-footer"><span class="footer-brand">BAMLAND COFFEE</span><span class="footer-note">با عشق برای لحظه‌های خوب طراحی شده</span><a class="hamrahyar-credit" href="https://hamrahyar.com" aria-label="همراه یار" target="_blank" rel="noopener noreferrer"><span class="hy-orbit" aria-hidden="true"><i></i><b>✦</b></span><span class="hy-copy"><small>ساخته‌شده با همراهی</small><strong>همراه‌یار <em>/ HamrahYar</em></strong></span></a></footer>
 <div class="cartbar"><button class="cart-button" id="open-cart" aria-label="مشاهده سبد خرید"><span class="cart-left"><span class="cart-count" id="cart-count">0</span><span class="cart-label">مشاهده سبد خرید</span></span><span class="cart-total" id="cart-total">۰ تومان</span></button></div>
 <div class="overlay" id="cart-overlay" role="dialog" aria-modal="true" aria-labelledby="cart-title">
   <section class="sheet">
