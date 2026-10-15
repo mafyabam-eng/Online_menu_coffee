@@ -122,6 +122,10 @@
     </div>
   </section>
 </div>
+<div class="overlay" id="order-overlay" role="dialog" aria-modal="true" aria-labelledby="order-title">
+  <section class="sheet"><div class="sheet-head"><h3 id="order-title">سفارش شما ثبت شد</h3><button class="close" id="close-order" aria-label="بستن">×</button></div>
+  <div id="order-details"></div><button class="primary" id="order-back" style="margin-top:16px">بازگشت به منو</button></section>
+</div>
 <div class="toast" id="toast" role="status"></div>
 <script>
 const categories=[
@@ -169,7 +173,43 @@ function closeCart(){$("#cart-overlay").classList.remove("open");document.body.s
 $("#close-cart").addEventListener("click",closeCart);$("#cart-overlay").addEventListener("click",e=>{if(e.target.id==="cart-overlay")closeCart()});
 $("#cart-items").addEventListener("click",e=>{const b=e.target.closest("[data-qty]");if(!b)return;const key=b.dataset.qty;cart[key]=(cart[key]||0)+Number(b.dataset.delta);if(cart[key]<=0)delete cart[key];updateCart()});
 $("#continue-checkout").addEventListener("click",()=>{$("#checkout").hidden=false;$("#table-number").focus()});
-$("#demo-submit").addEventListener("click",()=>{if(!$("#table-number").value){toast("لطفاً یک میز آزاد انتخاب کن");$("#table-number").focus();return}toast("انتخاب میز انجام شد؛ ثبت امن سفارش در مرحله بعد تکمیل می‌شود")});
+async function createCustomerOrder(){
+ const tableSelect=$("#table-number"),tableId=tableSelect.value;
+ if(!tableId){toast("لطفاً یک میز آزاد انتخاب کن");tableSelect.focus();return}
+ const chosen=[...tableSelect.options].find(o=>o.value===tableId),qrToken=chosen?.dataset.qrToken;
+ const lines=[];
+ for(const [key,quantity] of Object.entries(cart)){
+  if(quantity<=0)continue;
+  const [categoryId,index]=key.split(":");
+  const item=categories.find(c=>c.id===categoryId)?.items[Number(index)];
+  if(!item||!item[5]){toast("منو هنوز به پایگاه داده متصل نشده است");return}
+  lines.push({menu_item_id:item[5],quantity});
+ }
+ if(!lines.length){toast("سبد انتخاب‌ها خالی است");return}
+ const button=$("#demo-submit");button.disabled=true;button.textContent="در حال ثبت سفارش…";
+ try{
+  const sessionKey="bamland-session:"+qrToken;
+  let sessionToken=localStorage.getItem(sessionKey);
+  if(!sessionToken){sessionToken=crypto.randomUUID();localStorage.setItem(sessionKey,sessionToken)}
+  const response=await fetch(SUPABASE_URL+"/functions/v1/create-order",{method:"POST",headers:{apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY,"Content-Type":"application/json"},body:JSON.stringify({table_id:tableId,session_token:sessionToken,items:lines})});
+  const data=await response.json();
+  if(!response.ok){
+   if(data.error==="table_occupied")throw new Error("این میز همین حالا سفارش فعال دارد. لطفاً میز دیگری انتخاب کن.");
+   if(data.error==="table_unavailable")throw new Error("این میز دیگر در دسترس نیست؛ فهرست میزها را دوباره بررسی کن.");
+   throw new Error("ثبت سفارش انجام نشد. لطفاً دوباره تلاش کن.");
+  }
+  const order=data.order;
+  localStorage.setItem("bamland-active-order",JSON.stringify({table_id:tableId,qr_token:qrToken,session_token:sessionToken,order_id:order.id}));
+  const labels={pending:"در انتظار پذیرش مدیریت",accepted:"سفارش پذیرفته شد",preparing:"در حال آماده‌سازی",ready:"سفارش آماده است",served:"سفارش تحویل داده شد",settled:"سفارش تسویه شده",cancelled:"سفارش لغو شده"};
+  $("#order-details").innerHTML='<div class="notice" style="margin-bottom:12px">میز: <b>'+escapeHtml(chosen.textContent)+'</b><br>شماره سفارش: <b>'+escapeHtml(order.id.slice(0,8).toUpperCase())+'</b><br>وضعیت: <b>'+escapeHtml(labels[order.status]||order.status)+'</b><br>زمان انتظار تخمینی: <b>'+new Intl.NumberFormat("fa-IR").format(order.estimated_wait_minutes)+' دقیقه</b></div><div class="cart-sum"><span>مبلغ سفارش</span><strong>'+format(order.total)+'</strong></div><p style="font-size:11px;color:var(--muted)">سفارش شما برای مدیریت ارسال شد. وضعیت نهایی از پنل مدیریت به‌روزرسانی می‌شود.</p>';
+  Object.keys(cart).forEach(k=>delete cart[k]);updateCart();closeCart();$("#order-overlay").classList.add("open");document.body.style.overflow="hidden";
+ }catch(error){toast(error.message||"خطا در ثبت سفارش")}
+ finally{button.disabled=false;button.textContent="ثبت سفارش"}
+}
+$("#demo-submit").addEventListener("click",createCustomerOrder);
+function closeOrder(){ $("#order-overlay").classList.remove("open");document.body.style.overflow=""; }
+$("#close-order").addEventListener("click",closeOrder);$("#order-back").addEventListener("click",closeOrder);
+$("#order-overlay").addEventListener("click",e=>{if(e.target.id==="order-overlay")closeOrder()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeCart()});
 renderCategories();renderProducts();updateCart();
 
