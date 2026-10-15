@@ -25,12 +25,46 @@
 @media(max-width:760px){.wrap{width:min(100% - 28px,540px)}.topbar{height:68px}.brand-mark{width:38px;height:38px}.brand-name{font-size:15px}.hero{padding:27px 0 24px;grid-template-columns:1fr;gap:0;min-height:auto}.hero-visual{height:160px;grid-row:1}.halo{width:150px;height:150px}.orb{width:105px;height:105px}.orb span{font-size:33px}.orbit-label{right:calc(50% + 50px);bottom:0;white-space:nowrap}.hero-copy{font-size:12px}.hero h1{font-size:35px;margin:11px 0}.menu-head{align-items:start;flex-direction:column;padding-top:24px;gap:14px}.menu-head h2{font-size:22px}.search{width:100%}.products{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.product{border-radius:16px}.product-art{height:106px}.product-content{padding:11px}.product h4{font-size:12px}.price{font-size:11px}.description{font-size:10px;min-height:55px;margin:7px 0 10px}.serve{font-size:9px}.product-bottom{padding-top:9px}.add{width:31px;height:31px;border-radius:10px}.category-intro{margin:5px 0 13px}.note{margin-bottom:20px}.table-chip{font-size:10px;padding:8px 10px}}
 @media(max-width:360px){.products{grid-template-columns:1fr}.product-art{height:135px}.description{min-height:auto}.hero h1{font-size:30px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+
+.welcome-screen{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;overflow:hidden;background:radial-gradient(ellipse at 50% 45%,#0d422d 0,#041b13 55%,#020b08 100%);transition:opacity .9s ease,visibility .9s ease}
+.welcome-screen:before,.welcome-screen:after{content:"";position:absolute;width:min(78vw,520px);aspect-ratio:1;border:1px solid rgba(240,217,158,.22);border-radius:50%;box-shadow:0 0 70px rgba(216,179,106,.08),inset 0 0 70px rgba(16,135,75,.08);animation:welcomeOrbit 18s linear infinite}
+.welcome-screen:after{width:min(62vw,410px);border-style:dashed;border-color:rgba(72,205,135,.24);animation-duration:26s;animation-direction:reverse}
+.welcome-inner{position:relative;z-index:1;text-align:center;width:min(90%,520px);padding:30px 20px;animation:welcomeRise 1s both}
+.welcome-logo{width:min(58vw,270px);height:auto;overflow:visible;filter:drop-shadow(0 0 18px rgba(239,180,67,.24));animation:logoFloat 4s ease-in-out infinite}
+.welcome-title{margin:22px 0 8px;color:#f4d68c;font-size:clamp(24px,5vw,38px);font-weight:700}
+.welcome-copy{margin:0;color:#c0d5c6;font-size:13px;line-height:2}
+.welcome-progress{height:3px;width:min(230px,70%);margin:28px auto 0;background:rgba(240,217,158,.18);border-radius:9px;overflow:hidden}
+.welcome-progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,#24875a,#f2d080);box-shadow:0 0 12px #e9bd62;animation:welcomeLoad 2.6s ease forwards}
+.welcome-screen.leaving{opacity:0;visibility:hidden;pointer-events:none}
+.brand-mark{border:0;background:transparent;box-shadow:0 0 20px rgba(216,179,106,.12)}
+.brand-mark svg{width:45px;height:45px;overflow:visible}
+@keyframes welcomeOrbit{to{transform:rotate(360deg)}}
+@keyframes logoFloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-8px) rotate(1deg)}}
+@keyframes welcomeRise{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes welcomeLoad{to{width:100%}}
+@media(prefers-reduced-motion:reduce){.welcome-screen:before,.welcome-screen:after,.welcome-logo,.welcome-progress span{animation-duration:.01ms!important}}
 </style>
 </head>
-<body>
+<body>\n<section class="welcome-screen" id="welcome-screen" aria-label="خوش آمدید">
+  <div class="welcome-inner">
+    <svg class="welcome-logo" viewBox="0 0 320 320" role="img" aria-label="لوگوی نئونی باملند">
+      <defs><radialGradient id="orbGlow"><stop stop-color="#17583a"/><stop offset=".7" stop-color="#08291d"/><stop offset="1" stop-color="#03130d"/></radialGradient><linearGradient id="neonGold"><stop stop-color="#fff0b5"/><stop offset=".45" stop-color="#e8b84f"/><stop offset="1" stop-color="#9b6d25"/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="3.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+      <circle cx="160" cy="160" r="105" fill="url(#orbGlow)" stroke="#2c8d5d" stroke-width="2"/>
+      <g fill="none" stroke="url(#neonGold)" stroke-width="3" filter="url(#glow)"><ellipse cx="160" cy="160" rx="142" ry="61" transform="rotate(-35 160 160)"/><ellipse cx="160" cy="160" rx="140" ry="59" transform="rotate(43 160 160)" stroke-width="1.6"/><path d="M62 106Q38 67 78 61Q103 60 107 83M227 225Q255 260 280 225"/></g>
+      <g fill="#76bd72" stroke="#b3e39a" stroke-width="1.2"><path d="M60 103Q29 80 35 62Q64 69 60 103Z"/><path d="M246 83Q266 52 284 65Q276 91 246 83Z"/><path d="M83 241Q55 251 49 229Q73 221 83 241Z"/><path d="M245 235Q270 230 279 249Q254 263 245 235Z"/><path d="M104 47Q120 23 137 35Q127 56 104 47Z"/><path d="M207 272Q224 248 242 261Q229 282 207 272Z"/></g>
+      <g fill="#f7d68a" stroke="#fff0b5" stroke-width="1"><circle cx="83" cy="72" r="7"/><circle cx="83" cy="72" r="3" fill="#fff0b5"/><circle cx="245" cy="119" r="6"/><circle cx="245" cy="119" r="2.5" fill="#fff0b5"/><circle cx="104" cy="253" r="7"/><circle cx="104" cy="253" r="3" fill="#fff0b5"/></g>
+      <g fill="none" stroke="url(#neonGold)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"><path d="M139 137h43q-3 30-22 30t-21-30Z"/><path d="M182 143q23-2 17 14q-4 9-17 7"/><path d="M132 174h57M151 124q-8-12 4-20M166 124q-5-12 8-20"/></g>
+      <text x="160" y="207" text-anchor="middle" font-family="Georgia,serif" font-size="31" letter-spacing="1.5" fill="#f5d58b" filter="url(#glow)">BAMLAND</text><text x="160" y="228" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" letter-spacing="4" fill="#e4c67f">COFFEE &amp; MORE</text>
+    </svg>
+    <h1 class="welcome-title">به باملند خوش آمدید!</h1>
+    <p class="welcome-copy">یک مکث دلنشین، یک طعم به‌یادماندنی<br>در حال آماده‌سازی منوی شما...</p>
+    <div class="welcome-progress"><span></span></div>
+  </div>
+</section>
+
 <header class="wrap topbar">
   <a class="brand" href="#" aria-label="Bamland home">
-    <span class="brand-mark">bm</span>
+    <span class="brand-mark"><svg viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="24" fill="none" stroke="#d8b36a"/><ellipse cx="30" cy="30" rx="27" ry="10" fill="none" stroke="#4e9a65" transform="rotate(-35 30 30)"/><path d="M22 25h15q-1 10-7.5 10T22 25Zm15 2q8-1 6 5-1 4-6 3M25 39h12M28 20q-4-5 2-9M34 20q-2-5 4-9" fill="none" stroke="#f0d99e" stroke-width="1.8" stroke-linecap="round"/><path d="M11 19q-8-12 4-12 5 7-4 12M45 43q12-4 10 7-9 1-10-7" fill="#70b977"/></svg></span>
     <span><span class="brand-name">BAMLAND</span><span class="brand-sub">COFFEE · MENU</span></span>
   </a>
   <div class="table-chip"><span class="dot"></span><span>منوی دیجیتال</span><span aria-hidden="true">✦</span></div>
@@ -118,7 +152,7 @@ $("#cart-items").addEventListener("click",e=>{const b=e.target.closest("[data-qt
 $("#continue-checkout").addEventListener("click",()=>{$("#checkout").hidden=false;$("#table-number").focus()});
 $("#demo-submit").addEventListener("click",()=>{if(!$("#table-number").value.trim()){toast("شماره میز را وارد کن");$("#table-number").focus();return}toast("پیش‌نمایش آماده است؛ ثبت واقعی هنوز متصل نیست")});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeCart()});
-renderCategories();renderProducts();updateCart();
+renderCategories();renderProducts();updateCart();\nconst welcomeScreen=document.getElementById("welcome-screen");\nwindow.setTimeout(()=>{welcomeScreen.classList.add("leaving");window.setTimeout(()=>welcomeScreen.remove(),950)},3200);
 </script>
 </body>
 </html>
