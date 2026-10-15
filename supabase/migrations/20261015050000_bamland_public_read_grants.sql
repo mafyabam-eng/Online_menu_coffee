@@ -1,0 +1,1 @@
+grant select on public.menu_categories, public.menu_items, public.cafe_tables, public.cafe_settings to anon, authenticated;
