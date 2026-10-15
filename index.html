@@ -243,7 +243,7 @@ async function loadLiveMenu(){
 async function loadAvailableTables(){
  const select=$("#table-number");
  try{
-  const tables=await supabaseGet("rpc/get_available_tables");
+  const tables=await supabaseGet("cafe_tables?select=id,name,qr_token&is_active=eq.true&is_available=eq.true&order=sort_order.asc");
   const qrToken=new URLSearchParams(location.search).get("table");
   select.innerHTML='<option value="">انتخاب میز آزاد…</option>'+tables.map(t=>'<option value="'+escapeHtml(t.id)+'" data-qr-token="'+escapeHtml(t.qr_token)+'">'+escapeHtml(t.name)+'</option>').join("");
   if(qrToken){
