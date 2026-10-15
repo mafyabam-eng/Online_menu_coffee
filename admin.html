@@ -79,5 +79,6 @@ $("#settings-form").addEventListener("submit",async e=>{e.preventDefault();try{a
 $("#orders-list").addEventListener("change",async e=>{const s=e.target.closest("[data-status]");if(!s)return;try{const patch={status:s.value,updated_at:new Date().toISOString()};if(s.value==="settled")patch.settled_at=new Date().toISOString();await must(await client.from("orders").update(patch).eq("id",s.dataset.status));await loadOrders();await loadTables();updateStats();toast("وضعیت سفارش تغییر کرد")}catch(e){toast(errText(e));await loadOrders()}});
 $("#orders-list").addEventListener("click",async e=>{const b=e.target.closest("[data-delete-order]");if(!b||!confirm("سفارش حذف شود؟"))return;try{await must(await client.from("orders").delete().eq("id",b.dataset.deleteOrder));await loadOrders();await loadTables();updateStats();toast("سفارش حذف شد")}catch(e){toast(errText(e))}});
 $("#refresh-orders").addEventListener("click",async()=>{try{await loadOrders();await loadTables();updateStats();toast("سفارش‌ها به‌روز شدند")}catch(e){toast(errText(e))}});
+setInterval(async()=>{if(!currentUser)return;try{await loadOrders();updateStats()}catch(e){console.warn("Background order refresh failed",e)}},15000);
 </script>
 </body></html>
