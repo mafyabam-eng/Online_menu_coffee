@@ -200,9 +200,8 @@ async function createCustomerOrder(){
   }
   const order=data.order;
   localStorage.setItem("bamland-active-order",JSON.stringify({table_id:tableId,qr_token:qrToken,session_token:sessionToken,order_id:order.id}));
-  const labels={pending:"در انتظار پذیرش مدیریت",accepted:"سفارش پذیرفته شد",preparing:"در حال آماده‌سازی",ready:"سفارش آماده است",served:"سفارش تحویل داده شد",settled:"سفارش تسویه شده",cancelled:"سفارش لغو شده"};
-  $("#order-details").innerHTML='<div class="notice" style="margin-bottom:12px">میز: <b>'+escapeHtml(chosen.textContent)+'</b><br>شماره سفارش: <b>'+escapeHtml(order.id.slice(0,8).toUpperCase())+'</b><br>وضعیت: <b>'+escapeHtml(labels[order.status]||order.status)+'</b><br>زمان انتظار تخمینی: <b>'+new Intl.NumberFormat("fa-IR").format(order.estimated_wait_minutes)+' دقیقه</b></div><div class="cart-sum"><span>مبلغ سفارش</span><strong>'+format(order.total)+'</strong></div><p style="font-size:11px;color:var(--muted)">سفارش شما برای مدیریت ارسال شد. وضعیت نهایی از پنل مدیریت به‌روزرسانی می‌شود.</p>';
-  Object.keys(cart).forEach(k=>delete cart[k]);updateCart();closeCart();$("#order-overlay").classList.add("open");document.body.style.overflow="hidden";
+  renderOrderStatus({active:true,owned:true,table:{name:chosen.textContent},order,items:data.items||[]});
+  Object.keys(cart).forEach(k=>delete cart[k]);updateCart();closeCart();$("#order-overlay").classList.add("open");document.body.style.overflow="hidden";startOrderPolling(qrToken,sessionToken);
  }catch(error){toast(error.message||"خطا در ثبت سفارش")}
  finally{button.disabled=false;button.textContent="ثبت سفارش"}
 }
@@ -262,8 +261,56 @@ async function loadAvailableTables(){
   console.error("Available tables unavailable.",error);
  }
 }
+const orderStatusLabels={pending:"در انتظار پذیرش مدیریت",accepted:"سفارش پذیرفته شد",preparing:"در حال آماده‌سازی",ready:"سفارش آماده است",served:"سفارش تحویل داده شد",settled:"سفارش تسویه شده",cancelled:"سفارش لغو شده"};
+function renderOrderStatus(data){
+ const order=data.order||{},items=data.items||[];
+ $("#order-title").textContent="پیگیری سفارش";
+ $("#order-details").innerHTML='<div class="notice" style="margin-bottom:12px">میز: <b>'+escapeHtml(data.table?.name||"میز شما")+'</b><br>شماره سفارش: <b>'+escapeHtml(String(order.id||"").slice(0,8).toUpperCase())+'</b><br>وضعیت: <b>'+escapeHtml(orderStatusLabels[order.status]||order.status||"در انتظار")+'</b><br>زمان انتظار تخمینی: <b>'+new Intl.NumberFormat("fa-IR").format(order.estimated_wait_minutes||0)+' دقیقه</b></div><div class="cart-sum"><span>مبلغ سفارش</span><strong>'+format(order.total||0)+'</strong></div><div class="cart-items">'+items.map(it=>'<div class="cart-row"><div><strong>'+escapeHtml(it.item_name)+'</strong><small>'+format(it.unit_price)+' · هر عدد</small></div><span>× '+new Intl.NumberFormat("fa-IR").format(it.quantity)+'</span><b class="price">'+format(it.line_total)+'</b></div>').join("")+'</div><p style="font-size:11px;color:var(--muted)">وضعیت سفارش به‌صورت خودکار به‌روزرسانی می‌شود.</p>';
+}
+async function requestOrderStatus(qrToken,sessionToken){
+ const response=await fetch(SUPABASE_URL+"/functions/v1/order-status",{method:"POST",headers:{apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY,"Content-Type":"application/json"},body:JSON.stringify({qr_token:qrToken,session_token:sessionToken||""})});
+ if(!response.ok)throw new Error("وضعیت سفارش در دسترس نیست");
+ return response.json();
+}
+function startOrderPolling(qrToken,sessionToken){
+ if(window.bamlandOrderPoll)clearInterval(window.bamlandOrderPoll);
+ window.bamlandOrderPoll=setInterval(async()=>{
+  try{
+   const data=await requestOrderStatus(qrToken,sessionToken);
+   if(data.active&&data.owned){renderOrderStatus(data);return}
+   clearInterval(window.bamlandOrderPoll);window.bamlandOrderPoll=null;
+   localStorage.removeItem("bamland-session:"+qrToken);
+   const saved=JSON.parse(localStorage.getItem("bamland-active-order")||"null");
+   if(saved?.qr_token===qrToken)localStorage.removeItem("bamland-active-order");
+   $("#order-overlay").classList.remove("open");document.body.style.overflow="";
+   await loadAvailableTables();toast("سفارش قبلی بسته شد؛ منوی تازه آماده است.");
+  }catch(e){console.warn("Order status refresh failed",e)}
+ },12000);
+}
+async function checkForExistingOrder(){
+ const fromUrl=new URLSearchParams(location.search).get("table");
+ let saved=null;try{saved=JSON.parse(localStorage.getItem("bamland-active-order")||"null")}catch{}
+ const qrToken=fromUrl||(saved?.qr_token||"");
+ if(!qrToken)return;
+ const sessionToken=localStorage.getItem("bamland-session:"+qrToken)||"";
+ try{
+  const data=await requestOrderStatus(qrToken,sessionToken);
+  if(data.active&&data.owned){
+   localStorage.setItem("bamland-active-order",JSON.stringify({table_id:data.table.id,qr_token:qrToken,session_token:sessionToken,order_id:data.order.id}));
+   renderOrderStatus(data);$("#order-overlay").classList.add("open");document.body.style.overflow="hidden";startOrderPolling(qrToken,sessionToken);
+  }else if(data.active&&!data.owned){
+   $("#table-help").textContent="این میز سفارش فعال دارد و برای سفارش جدید قابل انتخاب نیست.";
+   if(fromUrl)toast("این میز در حال حاضر سفارش فعال دارد.");
+  }else{
+   localStorage.removeItem("bamland-session:"+qrToken);
+   if(saved?.qr_token===qrToken)localStorage.removeItem("bamland-active-order");
+   await loadAvailableTables();
+  }
+ }catch(e){console.warn("Could not restore customer order",e)}
+}
 loadLiveMenu();
 loadAvailableTables();
+checkForExistingOrder();
 
 const welcomeScreen = document.getElementById("welcome-screen");
 if (welcomeScreen) {
