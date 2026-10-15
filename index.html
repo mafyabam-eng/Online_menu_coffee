@@ -152,7 +152,15 @@ $("#cart-items").addEventListener("click",e=>{const b=e.target.closest("[data-qt
 $("#continue-checkout").addEventListener("click",()=>{$("#checkout").hidden=false;$("#table-number").focus()});
 $("#demo-submit").addEventListener("click",()=>{if(!$("#table-number").value.trim()){toast("شماره میز را وارد کن");$("#table-number").focus();return}toast("پیش‌نمایش آماده است؛ ثبت واقعی هنوز متصل نیست")});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeCart()});
-renderCategories();renderProducts();updateCart();\nconst welcomeScreen=document.getElementById("welcome-screen");\nwindow.setTimeout(()=>{welcomeScreen.classList.add("leaving");window.setTimeout(()=>welcomeScreen.remove(),950)},3200);
+renderCategories();renderProducts();updateCart();
+
+const welcomeScreen = document.getElementById("welcome-screen");
+if (welcomeScreen) {
+  window.setTimeout(() => {
+    welcomeScreen.classList.add("leaving");
+    window.setTimeout(() => welcomeScreen.remove(), 950);
+  }, 3200);
+}
 </script>
 </body>
 </html>
