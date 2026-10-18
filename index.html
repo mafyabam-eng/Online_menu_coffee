@@ -172,7 +172,7 @@ $("#open-cart").addEventListener("click",()=>{$("#cart-overlay").classList.add("
 function closeCart(){$("#cart-overlay").classList.remove("open");document.body.style.overflow=""}
 $("#close-cart").addEventListener("click",closeCart);$("#cart-overlay").addEventListener("click",e=>{if(e.target.id==="cart-overlay")closeCart()});
 $("#cart-items").addEventListener("click",e=>{const b=e.target.closest("[data-qty]");if(!b)return;const key=b.dataset.qty;cart[key]=(cart[key]||0)+Number(b.dataset.delta);if(cart[key]<=0)delete cart[key];updateCart()});
-$("#continue-checkout").addEventListener("click",()=>{$("#checkout").hidden=false;$("#table-number").focus()});
+$("#continue-checkout").addEventListener("click",async()=>{$("#checkout").hidden=false;$("#table-number").disabled=true;$("#table-help").textContent="در حال به‌روزرسانی فهرست میزهای آزاد…";await loadAvailableTables();$("#table-number").focus()});
 async function createCustomerOrder(){
  const tableSelect=$("#table-number"),tableId=tableSelect.value;
  if(!tableId){toast("لطفاً یک میز آزاد انتخاب کن");tableSelect.focus();return}
@@ -244,21 +244,29 @@ async function loadLiveMenu(){
 }
 async function loadAvailableTables(){
  const select=$("#table-number");
+ select.disabled=true;
  try{
   const tables=await supabaseGet("cafe_tables?select=id,name,qr_token&is_active=eq.true&is_available=eq.true&order=sort_order.asc");
+  const previousValue=select.value;
   select.innerHTML='<option value="">انتخاب میز آزاد…</option>'+tables.map(t=>'<option value="'+escapeHtml(t.id)+'" data-qr-token="'+escapeHtml(t.qr_token)+'">'+escapeHtml(t.name)+'</option>').join("");
   if(qrToken){
    const match=[...select.options].find(option=>option.dataset.qrToken===qrToken);
    if(match)select.value=match.value;
+  }else if(tables.some(t=>t.id===previousValue)){
+   select.value=previousValue;
   }
   if(!tables.length){
-   select.innerHTML='<option value="">هنوز میزی تعریف نشده است</option>';
-   $("#table-help").textContent="ابتدا میزها باید در پنل مدیریت تعریف شوند؛ میزهای دارای سفارش فعال به مشتری نمایش داده نمی‌شوند.";
+   select.innerHTML='<option value="">میز آزادی پیدا نشد</option>';
+   $("#table-help").textContent="فعلاً میز آزادی در دسترس نیست. اگر میز جدیدی اضافه کرده‌ای، فهرست را دوباره باز کن یا صفحه را تازه‌سازی کن.";
+  }else{
+   $("#table-help").textContent="یک میز آزاد انتخاب کن؛ میزهای دارای سفارش فعال برای سفارش جدید نمایش داده نمی‌شوند.";
   }
  }catch(error){
-  select.innerHTML='<option value="">دریافت فهرست میزها ناموفق بود</option>';
-  $("#table-help").textContent="اتصال فهرست میزها برقرار نشد؛ لطفاً بعداً دوباره تلاش کنید.";
+  select.innerHTML='<option value="">دریافت میزها ناموفق بود؛ دوباره تلاش کن</option>';
+  $("#table-help").textContent="دریافت فهرست میزها موقتاً ناموفق بود. دکمه «ادامه و ثبت میز» را دوباره بزن یا صفحه را تازه‌سازی کن.";
   console.error("Available tables unavailable.",error);
+ }finally{
+  select.disabled=false;
  }
 }
 const orderStatusLabels={pending:"در انتظار پذیرش مدیریت",accepted:"سفارش پذیرفته شد",preparing:"در حال آماده‌سازی",ready:"سفارش آماده است",served:"سفارش تحویل داده شد",settled:"سفارش تسویه شده",cancelled:"سفارش لغو شده"};
