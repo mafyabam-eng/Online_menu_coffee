@@ -206,7 +206,19 @@ function updateCart(){const qty=cartQty(),total=cartTotal();$("#cart-count").tex
 function toast(msg){const el=$("#toast");el.textContent=msg;el.classList.add("show");clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>el.classList.remove("show"),2300)}
 $("#categories").addEventListener("click",e=>{const b=e.target.closest("[data-cat]");if(!b)return;active=b.dataset.cat;renderCategories();renderProducts()});
 $("#products").addEventListener("click",e=>{const b=e.target.closest("[data-add]");if(!b)return;cart[b.dataset.add]=(cart[b.dataset.add]||0)+1;updateCart();toast("به سبد انتخاب‌ها اضافه شد")});
-$("#search").addEventListener("input",()=>{if($("#search").value.trim()){renderProducts()}else renderProducts()});
+$("#search").addEventListener("input",()=>{
+ const q=$("#search").value.trim().toLocaleLowerCase("fa");
+ if(q){
+  const matches=categories.flatMap(c=>c.items.map(it=>({c,it}))).filter(({c,it})=>(it[0]+" "+it[1]+" "+c.name+" "+c.fa).toLocaleLowerCase("fa").includes(q));
+  if(matches.length)active=matches[0].c.id;
+  else{
+   const matchingCategory=categories.find(c=>(c.name+" "+c.fa).toLocaleLowerCase("fa").includes(q));
+   if(matchingCategory)active=matchingCategory.id;
+  }
+  renderCategories();
+ }
+ renderProducts();
+});
 $("#open-cart").addEventListener("click",()=>{$("#cart-overlay").classList.add("open");$("#checkout").hidden=true;document.body.style.overflow="hidden"});
 function closeCart(){$("#cart-overlay").classList.remove("open");document.body.style.overflow=""}
 $("#close-cart").addEventListener("click",closeCart);$("#cart-overlay").addEventListener("click",e=>{if(e.target.id==="cart-overlay")closeCart()});
