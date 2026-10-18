@@ -44,6 +44,17 @@
 @keyframes welcomeRise{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes welcomeLoad{to{width:100%}}
 @media(prefers-reduced-motion:reduce){.welcome-screen:before,.welcome-screen:after,.welcome-logo,.welcome-progress span{animation-duration:.01ms!important}}
+/* BAMLAND golden orb: soft breathing light and delicate rising steam */
+.welcome-logo{filter:drop-shadow(0 0 18px rgba(239,180,67,.25));animation:logoFloat 5.5s ease-in-out infinite,goldBreath 4.2s ease-in-out infinite}
+.orb-steam path{stroke-dasharray:38 20;animation:steamRise 3.6s ease-in-out infinite;transform-origin:center}
+.orb-steam path:nth-child(2){animation-delay:-1.2s}.orb-steam path:nth-child(3){animation-delay:-2.1s}
+.brand-mark svg{overflow:visible;filter:drop-shadow(0 0 7px rgba(240,190,83,.2))}
+.mini-orb{transform-origin:30px 30px;animation:miniGlow 4s ease-in-out infinite}
+.mini-steam{stroke-dasharray:10 8;animation:steamRise 3.4s ease-in-out infinite}
+@keyframes steamRise{0%{opacity:.12;transform:translateY(8px) scale(.94)}45%{opacity:1}100%{opacity:.08;transform:translateY(-13px) scale(1.06)}}
+@keyframes goldBreath{0%,100%{filter:drop-shadow(0 0 15px rgba(239,180,67,.22))}50%{filter:drop-shadow(0 0 30px rgba(255,202,91,.48))}}
+@keyframes miniGlow{0%,100%{filter:drop-shadow(0 0 1px rgba(255,209,111,.25))}50%{filter:drop-shadow(0 0 8px rgba(255,209,111,.8))}}
+@media(prefers-reduced-motion:reduce){.orb-steam path,.mini-orb,.mini-steam{animation:none!important}}
 
 /* HamrahYar signature — discreet, elegant, and motion-aware */
 .site-footer{align-items:center;flex-wrap:wrap;padding-top:20px;gap:18px}
@@ -73,7 +84,7 @@
       <g fill="#76bd72" stroke="#b3e39a" stroke-width="1.2"><path d="M60 103Q29 80 35 62Q64 69 60 103Z"/><path d="M246 83Q266 52 284 65Q276 91 246 83Z"/><path d="M83 241Q55 251 49 229Q73 221 83 241Z"/><path d="M245 235Q270 230 279 249Q254 263 245 235Z"/><path d="M104 47Q120 23 137 35Q127 56 104 47Z"/><path d="M207 272Q224 248 242 261Q229 282 207 272Z"/></g>
       <g fill="#f7d68a" stroke="#fff0b5" stroke-width="1"><circle cx="83" cy="72" r="7"/><circle cx="83" cy="72" r="3" fill="#fff0b5"/><circle cx="245" cy="119" r="6"/><circle cx="245" cy="119" r="2.5" fill="#fff0b5"/><circle cx="104" cy="253" r="7"/><circle cx="104" cy="253" r="3" fill="#fff0b5"/></g>
       <g fill="none" stroke="url(#neonGold)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"><path d="M139 137h43q-3 30-22 30t-21-30Z"/><path d="M182 143q23-2 17 14q-4 9-17 7"/><path d="M132 174h57M151 124q-8-12 4-20M166 124q-5-12 8-20"/></g>
-      <text x="160" y="207" text-anchor="middle" font-family="Georgia,serif" font-size="31" letter-spacing="1.5" fill="#f5d58b" filter="url(#glow)">BAMLAND</text><text x="160" y="228" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" letter-spacing="4" fill="#e4c67f">COFFEE &amp; MORE</text>
+      <g class="orb-steam" fill="none" stroke="#f5d58b" stroke-linecap="round" filter="url(#glow)"><path d="M122 105C108 88 133 83 124 65C120 57 125 51 132 45" stroke-width="3" opacity=".85"/><path d="M158 101C143 83 169 75 157 56C152 47 159 39 165 32" stroke-width="3.5" opacity=".95"/><path d="M194 106C180 91 204 82 195 65C191 57 197 51 203 46" stroke-width="2.5" opacity=".75"/></g><text x="160" y="177" text-anchor="middle" direction="rtl" font-family="Vazirmatn, sans-serif" font-weight="800" font-size="35" fill="#fff0b5" stroke="#d8a943" stroke-width=".6" paint-order="stroke" filter="url(#glow)">باملند</text><path d="M105 190Q160 201 215 190" fill="none" stroke="#e8b84f" stroke-width="1.5" opacity=".8"/><text x="160" y="216" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" letter-spacing="3" fill="#e4c67f">COFFEE · MORE</text>
     </svg>
     <h1 class="welcome-title" id="welcome-title">به باملند خوش آمدید!</h1>
     <p class="welcome-copy">یک مکث دلنشین، یک طعم به‌یادماندنی<br>در حال آماده‌سازی منوی شما...</p>
@@ -83,7 +94,7 @@
 
 <header class="wrap topbar">
   <a class="brand" href="#" aria-label="Bamland home">
-    <span class="brand-mark"><svg viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="24" fill="none" stroke="#d8b36a"/><ellipse cx="30" cy="30" rx="27" ry="10" fill="none" stroke="#4e9a65" transform="rotate(-35 30 30)"/><path d="M22 25h15q-1 10-7.5 10T22 25Zm15 2q8-1 6 5-1 4-6 3M25 39h12M28 20q-4-5 2-9M34 20q-2-5 4-9" fill="none" stroke="#f0d99e" stroke-width="1.8" stroke-linecap="round"/><path d="M11 19q-8-12 4-12 5 7-4 12M45 43q12-4 10 7-9 1-10-7" fill="#70b977"/></svg></span>
+    <span class="brand-mark" aria-label="باملند"><svg viewBox="0 0 60 60" aria-hidden="true"><defs><radialGradient id="headOrb"><stop stop-color="#285b3c"/><stop offset=".78" stop-color="#09251b"/><stop offset="1" stop-color="#020d08"/></radialGradient></defs><circle class="mini-orb" cx="30" cy="30" r="25" fill="url(#headOrb)" stroke="#d8b36a"/><ellipse cx="30" cy="30" rx="28" ry="11" fill="none" stroke="#d8b36a" opacity=".8" transform="rotate(-35 30 30)"/><path class="mini-steam" d="M20 22Q14 15 21 10M29 21Q23 13 31 7M38 22Q32 15 40 11" fill="none" stroke="#f0d99e" stroke-width="1.6" stroke-linecap="round"/><text x="30" y="39" text-anchor="middle" direction="rtl" font-family="Vazirmatn,sans-serif" font-size="12" font-weight="800" fill="#fff0b5">باملند</text></svg></span>
     <span><span class="brand-name">BAMLAND</span><span class="brand-sub">COFFEE · MENU</span></span>
   </a>
   <div class="table-chip"><span class="dot"></span><span>منوی دیجیتال</span><span aria-hidden="true">✦</span></div>
