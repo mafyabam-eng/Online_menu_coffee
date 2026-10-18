@@ -58,15 +58,24 @@ button:disabled,[data-bamland-busy="true"]{opacity:.62;cursor:wait!important;fil
   if(event.type==="change"&&event.target?.matches?.('select,input[type="checkbox"],input[type="radio"]'))return event.target;
   return null;
  }
- function lock(control){
-  if(!control||busy.has(control))return false;
-  busy.add(control);control.dataset.bamlandBusy="true";control.setAttribute("aria-busy","true");
+ function lock(control,event){
+  if(!control)return false;
+  if(busy.has(control)){
+   if(control.__bamlandLockEvent!==event)return false;
+   control.__bamlandBusyCount=(control.__bamlandBusyCount||1)+1;
+   return true;
+  }
+  busy.add(control);control.__bamlandLockEvent=event;control.__bamlandBusyCount=1;
+  control.dataset.bamlandBusy="true";control.setAttribute("aria-busy","true");
   if("disabled" in control){control.__bamlandWasDisabled=!!control.disabled;control.disabled=true}
   return true;
  }
  function unlock(control){
-  if(!control)return;
-  busy.delete(control);delete control.dataset.bamlandBusy;control.removeAttribute("aria-busy");
+  if(!control||!busy.has(control))return;
+  control.__bamlandBusyCount=Math.max(0,(control.__bamlandBusyCount||1)-1);
+  if(control.__bamlandBusyCount>0)return;
+  busy.delete(control);delete control.__bamlandLockEvent;delete control.__bamlandBusyCount;
+  delete control.dataset.bamlandBusy;control.removeAttribute("aria-busy");
   if("disabled" in control&&!control.__bamlandWasDisabled&&!control.dataset.bamlandPermanentlyLocked)control.disabled=false;
   delete control.__bamlandWasDisabled;
  }
@@ -74,12 +83,12 @@ button:disabled,[data-bamland-busy="true"]{opacity:.62;cursor:wait!important;fil
   if(!listener||typeof listener!=="function"||!["click","submit","change"].includes(type))return nativeAdd.call(this,type,listener,options);
   const target=this;
   const wrapped=function(event){
-   const control=controlFor(event,target),asyncListener=listener.constructor?.name==="AsyncFunction";
-   if(asyncListener&&control&&busy.has(control)){if(event.type==="submit")event.preventDefault();return}
+   const control=controlFor(event,target);
+   if(control&&busy.has(control)&&control.__bamlandLockEvent!==event){if(event.type==="submit")event.preventDefault();return}
    let result;
    try{result=listener.call(this,event)}catch(error){throw error}
    if(result&&typeof result.then==="function"){
-    if(control&&!busy.has(control))lock(control);
+    if(control&&!lock(control,event))return result;
     return result.finally(()=>unlock(control));
    }
    return result;
