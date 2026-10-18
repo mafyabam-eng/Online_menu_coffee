@@ -338,13 +338,13 @@ $("#feedback-submit").addEventListener("click",async()=>{
  const rating=$("#feedback-rating").value;const message=$("#feedback-message").value.trim();const status=$("#feedback-status");
  if(!orderId||!token){status.textContent="اطلاعات سفارش پیدا نشد؛ لطفاً صفحه را تازه‌سازی کنید.";return}
  if(!rating&&!message){status.textContent="لطفاً امتیاز یا متن پیام را وارد کنید.";return}
- const button=$("#feedback-submit");button.disabled=true;status.textContent="در حال ارسال…";
+ const button=$("#feedback-submit");button.disabled=true;let feedbackSaved=false;status.textContent="در حال ارسال…";
  try{
   const response=await fetch(SUPABASE_URL+"/rest/v1/rpc/submit_anonymous_customer_feedback",{method:"POST",headers:{apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY,"Content-Type":"application/json"},body:JSON.stringify({p_order_id:orderId,p_session_token:token,p_rating:rating?Number(rating):null,p_message:message})});
   if(!response.ok){if(response.status===409){button.disabled=true;status.textContent="برای این سفارش قبلاً نظر ثبت شده است؛ امکان ثبت نظر دوم وجود ندارد.";return}throw new Error("ارسال پیام انجام نشد ("+response.status+")")}
-  status.textContent="پیام ناشناس شما برای مدیریت ثبت شد. سپاس از همراهی‌تان 🌿";$("#feedback-message").value="";$("#feedback-rating").value="";button.disabled=true;$("#feedback-message").disabled=true;$("#feedback-rating").disabled=true;
+  feedbackSaved=true;status.textContent="پیام ناشناس شما برای مدیریت ثبت شد. سپاس از همراهی‌تان 🌿";$("#feedback-message").value="";$("#feedback-rating").value="";button.disabled=true;$("#feedback-message").disabled=true;$("#feedback-rating").disabled=true;
  }catch(error){status.textContent=error.message||"ارسال پیام ناموفق بود."}
- finally{button.disabled=false}
+ finally{if(!feedbackSaved&& !status.textContent.includes("قبلاً نظر ثبت شده"))button.disabled=false}
 });
 async function requestOrderStatus(qrToken,sessionToken){
  const response=await fetch(SUPABASE_URL+"/functions/v1/order-status",{method:"POST",headers:{apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY,"Content-Type":"application/json"},body:JSON.stringify({qr_token:qrToken,session_token:sessionToken||""})});
