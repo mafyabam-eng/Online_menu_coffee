@@ -197,19 +197,14 @@ button:disabled,[data-bamland-busy="true"]{opacity:.62;cursor:wait!important;fil
   return null;
  }
  function lock(control){
-  if(!control)return false;
-  if(busy.has(control))return false;
-  busy.add(control);
-  control.dataset.bamlandBusy="true";
-  control.setAttribute("aria-busy","true");
+  if(!control||busy.has(control))return false;
+  busy.add(control);control.dataset.bamlandBusy="true";control.setAttribute("aria-busy","true");
   if("disabled" in control){control.__bamlandWasDisabled=!!control.disabled;control.disabled=true}
   return true;
  }
  function unlock(control){
   if(!control)return;
-  busy.delete(control);
-  delete control.dataset.bamlandBusy;
-  control.removeAttribute("aria-busy");
+  busy.delete(control);delete control.dataset.bamlandBusy;control.removeAttribute("aria-busy");
   if("disabled" in control&&!control.__bamlandWasDisabled&&!control.dataset.bamlandPermanentlyLocked)control.disabled=false;
   delete control.__bamlandWasDisabled;
  }
@@ -217,16 +212,14 @@ button:disabled,[data-bamland-busy="true"]{opacity:.62;cursor:wait!important;fil
   if(!listener||typeof listener!=="function"||!["click","submit","change"].includes(type))return nativeAdd.call(this,type,listener,options);
   const target=this;
   const wrapped=function(event){
-   const control=controlFor(event,target);
-   const asyncListener=listener.constructor?.name==="AsyncFunction";
-   if(asyncListener&&control&&!lock(control)){if(event.type==="submit")event.preventDefault();return}
+   const control=controlFor(event,target),asyncListener=listener.constructor?.name==="AsyncFunction";
+   if(asyncListener&&control&&busy.has(control)){if(event.type==="submit")event.preventDefault();return}
    let result;
-   try{result=listener.call(this,event)}catch(error){if(asyncListener)unlock(control);throw error}
+   try{result=listener.call(this,event)}catch(error){throw error}
    if(result&&typeof result.then==="function"){
-    if(!asyncListener&&control&&!lock(control)){return result}
+    if(control&&!busy.has(control))lock(control);
     return result.finally(()=>unlock(control));
    }
-   if(asyncListener)unlock(control);
    return result;
   };
   return nativeAdd.call(this,type,wrapped,options);
@@ -450,6 +443,7 @@ function lockFeedbackForm(orderId,message){
  const button=$("#feedback-submit");
  button.disabled=true;$("#feedback-message").disabled=true;$("#feedback-rating").disabled=true;
  if(orderId)localStorage.setItem("bamland-feedback-submitted:"+orderId,"1");
+ button.dataset.bamlandPermanentlyLocked="1";
  $("#feedback-status").textContent=message||"برای این سفارش قبلاً پیام ثبت شده است؛ امکان ارسال دوباره وجود ندارد.";
 }
 $("#feedback-submit").addEventListener("click",async()=>{
