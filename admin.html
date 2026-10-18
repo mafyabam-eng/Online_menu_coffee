@@ -125,6 +125,15 @@ $("#settings-form").addEventListener("submit",async e=>{e.preventDefault();try{a
 $("#orders-list").addEventListener("change",async e=>{const s=e.target.closest("[data-status]");if(!s)return;try{const patch={status:s.value,updated_at:new Date().toISOString()};if(s.value==="settled")patch.settled_at=new Date().toISOString();await must(await client.from("orders").update(patch).eq("id",s.dataset.status));await loadOrders();await loadTables();updateStats();toast("وضعیت سفارش تغییر کرد")}catch(e){toast(errText(e));await loadOrders()}});
 $("#orders-list").addEventListener("click",async e=>{const b=e.target.closest("[data-delete-order]");if(!b||!confirm("سفارش حذف شود؟"))return;try{await must(await client.from("orders").delete().eq("id",b.dataset.deleteOrder));await loadOrders();await loadTables();updateStats();toast("سفارش حذف شد")}catch(e){toast(errText(e))}});
 $("#refresh-orders").addEventListener("click",async()=>{try{await loadOrders();await loadTables();updateStats();toast("سفارش‌ها به‌روز شدند")}catch(e){toast(errText(e))}});
+client.channel("bamland-admin-live")
+ .on("postgres_changes",{event:"*",schema:"public",table:"orders"},async()=>{if(!currentUser)return;try{await loadOrders();await loadTables();updateStats()}catch(e){console.warn("Realtime order refresh failed",e)}})
+ .on("postgres_changes",{event:"*",schema:"public",table:"cafe_tables"},async()=>{if(!currentUser)return;try{await loadTables();updateStats()}catch(e){console.warn("Realtime table refresh failed",e)}})
+ .on("postgres_changes",{event:"*",schema:"public",table:"order_items"},async()=>{if(!currentUser)return;try{await loadOrders();updateStats()}catch(e){console.warn("Realtime item refresh failed",e)}})
+ .on("postgres_changes",{event:"*",schema:"public",table:"reviews"},async()=>{if(!currentUser)return;try{await loadReviews()}catch(e){console.warn("Realtime review refresh failed",e)}})
+ .on("postgres_changes",{event:"*",schema:"public",table:"menu_items"},async()=>{if(!currentUser)return;try{await loadItems();updateStats()}catch(e){console.warn("Realtime menu refresh failed",e)}})
+ .on("postgres_changes",{event:"*",schema:"public",table:"menu_categories"},async()=>{if(!currentUser)return;try{await loadCategories()}catch(e){console.warn("Realtime categories refresh failed",e)}})
+ .on("postgres_changes",{event:"*",schema:"public",table:"cafe_settings"},async()=>{if(!currentUser)return;try{await loadSettings()}catch(e){console.warn("Realtime settings refresh failed",e)}})
+ .subscribe((status)=>{if(status==="CHANNEL_ERROR"||status==="TIMED_OUT")console.warn("Admin realtime status:",status)});
 setInterval(async()=>{if(!currentUser)return;try{await loadOrders();updateStats()}catch(e){console.warn("Background order refresh failed",e)}},15000);
 </script>
 </body></html>
