@@ -123,8 +123,11 @@
   </section>
 </div>
 <div class="overlay" id="order-overlay" role="dialog" aria-modal="true" aria-labelledby="order-title">
-  <section class="sheet"><div class="sheet-head"><h3 id="order-title">سفارش شما ثبت شد</h3><button class="close" id="close-order" aria-label="بستن">×</button></div>
-  <div id="order-details"></div><button class="primary" id="order-back" style="margin-top:16px">بازگشت به منو</button></section>
+  <section class="sheet" style="max-height:92vh;overflow-y:auto"><div class="sheet-head"><h3 id="order-title">پیگیری سفارش شما</h3><span class="pill">باملند</span></div>
+  <div id="order-summary"></div>
+  <section class="notice" style="margin-top:14px"><h4 style="margin:0 0 8px">🃏 بازی پیدا کردن کارت‌های مشابه</h4><p id="memory-game-status" style="font-size:12px;margin:0 0 10px;color:var(--muted)">دو کارت را باز کن و جفت‌های مشابه را پیدا کن.</p><div id="memory-game" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px"></div><button type="button" id="memory-game-reset" class="primary" style="margin-top:10px">بازی دوباره</button></section>
+  <section class="notice" style="margin-top:14px"><h4 style="margin:0 0 8px">💬 پیام ناشناس برای مدیریت</h4><p style="font-size:12px;color:var(--muted);margin:0 0 10px">نام و شماره تماس شما پرسیده نمی‌شود. نظرتان مستقیماً برای مدیریت ثبت می‌شود.</p><label for="feedback-rating" style="display:block;margin-bottom:6px">امتیاز شما (اختیاری)</label><select id="feedback-rating" style="width:100%;padding:10px;border-radius:10px;background:#123b2b;color:var(--cream);border:1px solid var(--line);margin-bottom:10px"><option value="">بدون امتیاز</option><option value="5">۵ — عالی</option><option value="4">۴ — خوب</option><option value="3">۳ — معمولی</option><option value="2">۲ — ضعیف</option><option value="1">۱ — خیلی ضعیف</option></select><label for="feedback-message" style="display:block;margin-bottom:6px">پیام شما</label><textarea id="feedback-message" maxlength="1200" rows="3" placeholder="پیشنهاد، انتقاد یا نظرتان را بنویسید…" style="width:100%;box-sizing:border-box;padding:11px;border-radius:10px;background:#123b2b;color:var(--cream);border:1px solid var(--line);resize:vertical"></textarea><button type="button" id="feedback-submit" class="primary" style="margin-top:10px">ارسال ناشناس برای مدیریت</button><p id="feedback-status" role="status" style="font-size:12px;color:var(--muted);margin:8px 0 0"></p></section>
+  </section>
 </div>
 <div class="toast" id="toast" role="status"></div>
 <script>
@@ -206,9 +209,7 @@ async function createCustomerOrder(){
  finally{button.disabled=false;button.textContent="ثبت سفارش"}
 }
 $("#demo-submit").addEventListener("click",createCustomerOrder);
-function closeOrder(){ $("#order-overlay").classList.remove("open");document.body.style.overflow=""; }
-$("#close-order").addEventListener("click",closeOrder);$("#order-back").addEventListener("click",closeOrder);
-$("#order-overlay").addEventListener("click",e=>{if(e.target.id==="order-overlay")closeOrder()});
+function closeOrder(){ if(localStorage.getItem("bamland-active-order")){toast("تا زمان بسته‌شدن سفارش، پیگیری سفارش همین‌جا در دسترس می‌ماند.");return} $("#order-overlay").classList.remove("open");document.body.style.overflow=""; }
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeCart()});
 renderCategories();renderProducts();updateCart();
 
@@ -268,11 +269,67 @@ async function loadAvailableTables(){
  }
 }
 const orderStatusLabels={pending:"در انتظار پذیرش مدیریت",accepted:"سفارش پذیرفته شد",preparing:"در حال آماده‌سازی",ready:"سفارش آماده است",served:"سفارش تحویل داده شد",settled:"سفارش تسویه شده",cancelled:"سفارش لغو شده"};
+let currentCustomerOrder=null;
+function remainingWaitMs(order){
+ const minutes=Math.max(0,Number(order.estimated_wait_minutes||0));
+ const created=Date.parse(order.created_at||"");
+ if(!Number.isFinite(created))return minutes*60000;
+ return Math.max(0,created+minutes*60000-Date.now());
+}
+function formatRemaining(ms){
+ const total=Math.ceil(ms/1000),mins=Math.floor(total/60),secs=total%60;
+ return new Intl.NumberFormat("fa-IR").format(mins)+":"+new Intl.NumberFormat("fa-IR",{minimumIntegerDigits:2,useGrouping:false}).format(secs);
+}
 function renderOrderStatus(data){
  const order=data.order||{},items=data.items||[];
- $("#order-title").textContent="پیگیری سفارش";
- $("#order-details").innerHTML='<div class="notice" style="margin-bottom:12px">میز: <b>'+escapeHtml(data.table?.name||"میز شما")+'</b><br>شماره سفارش: <b>'+escapeHtml(String(order.id||"").slice(0,8).toUpperCase())+'</b><br>وضعیت: <b>'+escapeHtml(orderStatusLabels[order.status]||order.status||"در انتظار")+'</b><br>زمان انتظار تخمینی: <b>'+new Intl.NumberFormat("fa-IR").format(order.estimated_wait_minutes||0)+' دقیقه</b></div><div class="cart-sum"><span>مبلغ سفارش</span><strong>'+format(order.total||0)+'</strong></div><div class="cart-items">'+items.map(it=>'<div class="cart-row"><div><strong>'+escapeHtml(it.item_name)+'</strong><small>'+format(it.unit_price)+' · هر عدد</small></div><span>× '+new Intl.NumberFormat("fa-IR").format(it.quantity)+'</span><b class="price">'+format(it.line_total)+'</b></div>').join("")+'</div><p style="font-size:11px;color:var(--muted)">وضعیت سفارش به‌صورت خودکار به‌روزرسانی می‌شود.</p>';
+ currentCustomerOrder=order;
+ const status=order.status||"pending";
+ const terminal=status==="settled"||status==="cancelled";
+ const remaining=remainingWaitMs(order);
+ const statusText=orderStatusLabels[status]||status;
+ const statusHint=({pending:"سفارش شما ثبت شده و منتظر تأیید مدیریت است.",accepted:"سفارش تأیید شده و در صف آماده‌سازی قرار دارد.",preparing:"سفارش شما در حال آماده‌سازی است.",ready:"سفارش آماده تحویل است؛ لطفاً به راهنمایی کارکنان توجه کنید.",served:"سفارش به شما تحویل داده شده است.",settled:"این سفارش تسویه شده است.",cancelled:"این سفارش لغو شده است."})[status]||"وضعیت سفارش به‌روزرسانی می‌شود.";
+ $("#order-summary").innerHTML='<div class="notice" style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><strong>وضعیت سفارش</strong><span class="pill">'+escapeHtml(statusText)+'</span></div><p style="font-size:12px;color:var(--muted);margin:8px 0">'+escapeHtml(statusHint)+'</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><small style="color:var(--muted)">میز</small><div><b>'+escapeHtml(data.table?.name||"میز شما")+'</b></div></div><div><small style="color:var(--muted)">شماره سفارش</small><div><b>'+escapeHtml(String(order.id||"").slice(0,8).toUpperCase())+'</b></div></div><div><small style="color:var(--muted)">زمان انتظار باقی‌مانده (تخمینی)</small><div id="order-countdown" style="font-size:22px;font-weight:800;color:var(--gold)">'+(status==="ready"||status==="served"||terminal?"—":formatRemaining(remaining))+'</div></div><div><small style="color:var(--muted)">مبلغ سفارش</small><div><b>'+format(order.total||0)+'</b></div></div></div></div><div class="cart-items">'+items.map(it=>'<div class="cart-row"><div><strong>'+escapeHtml(it.item_name)+'</strong><small>'+format(it.unit_price)+' · هر عدد</small></div><span>× '+new Intl.NumberFormat("fa-IR").format(it.quantity)+'</span><b class="price">'+format(it.line_total)+'</b></div>').join("")+'</div><p style="font-size:11px;color:var(--muted)">وضعیت سفارش هر ۱۲ ثانیه به‌روزرسانی می‌شود. شمارش معکوس تخمینی است؛ وضعیت واقعی را مدیریت به‌روزرسانی می‌کند.</p>';
+ const closed=status==="settled"||status==="cancelled";
+ $("#feedback-submit").disabled=closed;
+ if(closed){$("#feedback-status").textContent="این سفارش بسته شده است و دیگر امکان ارسال پیام وجود ندارد."}
+ updateOrderCountdown();
 }
+function updateOrderCountdown(){
+ const node=$("#order-countdown");if(!node||!currentCustomerOrder)return;
+ const status=currentCustomerOrder.status;
+ if(status==="ready"||status==="served"){node.textContent="آماده";return}
+ if(status==="settled"||status==="cancelled"){node.textContent="—";return}
+ node.textContent=formatRemaining(remainingWaitMs(currentCustomerOrder));
+}
+window.bamlandCountdownTimer=setInterval(updateOrderCountdown,1000);
+const memorySymbols=["☕","🌿","🧋","🍰","☕","🌿","🧋","🍰"];
+let memoryDeck=[],memoryOpen=[],memoryMatched=[],memoryMoves=0,memoryLocked=false;
+function shuffleCards(){memoryDeck=[...memorySymbols].sort(()=>Math.random()-.5);memoryOpen=[];memoryMatched=[];memoryMoves=0;memoryLocked=false;renderMemoryGame()}
+function renderMemoryGame(){
+ $("#memory-game").innerHTML=memoryDeck.map((symbol,i)=>'<button type="button" data-memory-card="'+i+'" aria-label="کارت '+(memoryMatched.includes(i)||memoryOpen.includes(i)?symbol:"بسته")+'" style="min-height:58px;border:1px solid var(--line);border-radius:12px;background:'+(memoryMatched.includes(i)?"#285b43":"#123b2b")+';color:var(--cream);font-size:25px">'+(memoryMatched.includes(i)||memoryOpen.includes(i)?symbol:"✦")+'</button>').join("");
+ $("#memory-game-status").textContent=memoryMatched.length===8?"آفرین! همه جفت‌ها را در "+new Intl.NumberFormat("fa-IR").format(memoryMoves)+" حرکت پیدا کردی.": "حرکت‌ها: "+new Intl.NumberFormat("fa-IR").format(memoryMoves)+" · جفت‌های پیدا شده: "+new Intl.NumberFormat("fa-IR").format(memoryMatched.length/2)+" از ۴";
+}
+$("#memory-game").addEventListener("click",e=>{
+ const button=e.target.closest("[data-memory-card]");if(!button||memoryLocked)return;
+ const i=Number(button.dataset.memoryCard);if(memoryOpen.includes(i)||memoryMatched.includes(i))return;
+ memoryOpen.push(i);renderMemoryGame();
+ if(memoryOpen.length===2){memoryMoves++;const [a,b]=memoryOpen;if(memoryDeck[a]===memoryDeck[b]){memoryMatched.push(a,b);memoryOpen=[];renderMemoryGame()}else{memoryLocked=true;setTimeout(()=>{memoryOpen=[];memoryLocked=false;renderMemoryGame()},700)}}
+});
+$("#memory-game-reset").addEventListener("click",shuffleCards);shuffleCards();
+$("#feedback-submit").addEventListener("click",async()=>{
+ const saved=JSON.parse(localStorage.getItem("bamland-active-order")||"null");
+ const token=saved?.session_token||"";const orderId=currentCustomerOrder?.id;
+ const rating=$("#feedback-rating").value;const message=$("#feedback-message").value.trim();const status=$("#feedback-status");
+ if(!orderId||!token){status.textContent="اطلاعات سفارش پیدا نشد؛ لطفاً صفحه را تازه‌سازی کنید.";return}
+ if(!rating&&!message){status.textContent="لطفاً امتیاز یا متن پیام را وارد کنید.";return}
+ const button=$("#feedback-submit");button.disabled=true;status.textContent="در حال ارسال…";
+ try{
+  const response=await fetch(SUPABASE_URL+"/rest/v1/rpc/submit_anonymous_customer_feedback",{method:"POST",headers:{apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY,"Content-Type":"application/json"},body:JSON.stringify({p_order_id:orderId,p_session_token:token,p_rating:rating?Number(rating):null,p_message:message})});
+  if(!response.ok)throw new Error("ارسال پیام انجام نشد ("+response.status+")");
+  status.textContent="پیام ناشناس شما برای مدیریت ثبت شد. سپاس از همراهی‌تان 🌿";$("#feedback-message").value="";$("#feedback-rating").value="";
+ }catch(error){status.textContent=error.message||"ارسال پیام ناموفق بود."}
+ finally{button.disabled=false}
+});
 async function requestOrderStatus(qrToken,sessionToken){
  const response=await fetch(SUPABASE_URL+"/functions/v1/order-status",{method:"POST",headers:{apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY,"Content-Type":"application/json"},body:JSON.stringify({qr_token:qrToken,session_token:sessionToken||""})});
  if(!response.ok)throw new Error("وضعیت سفارش در دسترس نیست");
@@ -284,12 +341,17 @@ function startOrderPolling(qrToken,sessionToken){
   try{
    const data=await requestOrderStatus(qrToken,sessionToken);
    if(data.active&&data.owned){renderOrderStatus(data);return}
-   clearInterval(window.bamlandOrderPoll);window.bamlandOrderPoll=null;
-   localStorage.removeItem("bamland-session:"+qrToken);
    const saved=JSON.parse(localStorage.getItem("bamland-active-order")||"null");
-   if(saved?.qr_token===qrToken)localStorage.removeItem("bamland-active-order");
-   $("#order-overlay").classList.remove("open");document.body.style.overflow="";
-   await loadAvailableTables();toast("سفارش قبلی بسته شد؛ منوی تازه آماده است.");
+   if(data.order&&(data.order.status==="settled"||data.order.status==="cancelled")){
+    renderOrderStatus(data);
+    clearInterval(window.bamlandOrderPoll);window.bamlandOrderPoll=null;
+    localStorage.removeItem("bamland-session:"+qrToken);
+    if(saved?.qr_token===qrToken)localStorage.removeItem("bamland-active-order");
+    $("#order-title").textContent="سفارش بسته شد";
+    $("#order-summary").insertAdjacentHTML("beforeend",'<button class="primary" id="start-new-order" style="margin-top:12px">بازگشت به منو و سفارش جدید</button>');
+    $("#start-new-order").addEventListener("click",()=>{ $("#order-overlay").classList.remove("open");document.body.style.overflow="";loadAvailableTables(); });
+    return;
+   }
   }catch(e){console.warn("Order status refresh failed",e)}
  },12000);
 }
