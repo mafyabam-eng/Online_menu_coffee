@@ -32,6 +32,19 @@
 .welcome-screen:after{width:min(62vw,410px);border-style:dashed;border-color:rgba(72,205,135,.24);animation-duration:26s;animation-direction:reverse}
 .welcome-inner{position:relative;z-index:1;text-align:center;width:min(94%,680px);padding:30px 20px;animation:welcomeRise 1s both}
 .welcome-logo{width:min(72vw,360px);height:auto;overflow:visible;filter:drop-shadow(0 0 24px rgba(239,180,67,.3));animation:logoFloat 4s ease-in-out infinite}
+.welcome-brand{position:relative;width:max-content;max-width:100%;margin:-2px auto 22px;animation:brandReveal 1.2s .22s both}
+.welcome-brand-word{display:flex;justify-content:center;gap:.16em;direction:ltr;font-family:"DM Sans",Arial,sans-serif;font-size:clamp(46px,10vw,76px);font-weight:800;line-height:.92;letter-spacing:.12em;color:#f9e6ad;text-shadow:0 0 8px rgba(255,224,145,.75),0 0 26px rgba(232,184,79,.5),0 8px 30px rgba(0,0,0,.4);position:relative}
+.welcome-brand-word span{display:inline-block;animation:brandLetter 1s cubic-bezier(.2,.8,.2,1) both}
+.welcome-brand-word span:nth-child(2){animation-delay:.16s;background:linear-gradient(100deg,#fff1b8 0%,#d9a945 42%,#fff0b5 58%,#bd8730 75%,#fff0b5 100%);background-size:220% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:brandLetter 1s .16s cubic-bezier(.2,.8,.2,1) both,brandShine 4s 1.2s ease-in-out infinite}
+.welcome-brand-caption{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:11px;color:#9fd9b4;font:600 9px/1.5 "DM Sans",Arial,sans-serif;letter-spacing:.24em;direction:ltr}
+.welcome-brand-caption i{font-style:normal;color:#f0d18a;text-shadow:0 0 10px #e8b84f}
+.welcome-brand-persian{margin-top:8px;color:#d9e8db;font-size:12px;letter-spacing:.2px;opacity:.9}
+.welcome-brand-persian span{color:#e8b84f}
+@keyframes brandReveal{from{opacity:0;filter:blur(7px);transform:translateY(12px) scale(.94)}to{opacity:1;filter:blur(0);transform:translateY(0) scale(1)}}
+@keyframes brandLetter{from{opacity:0;transform:translateY(18px) rotateX(55deg);filter:blur(5px)}to{opacity:1;transform:translateY(0) rotateX(0);filter:blur(0)}}
+@keyframes brandShine{0%,65%,100%{background-position:100% center}35%{background-position:0 center}}
+@media(max-width:420px){.welcome-brand-word{font-size:clamp(42px,12vw,56px);letter-spacing:.09em}.welcome-brand-caption{font-size:8px;letter-spacing:.17em}.welcome-brand-persian{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.welcome-brand,.welcome-brand-word span,.welcome-brand-word span:nth-child(2){animation:none!important;opacity:1;filter:none}}
 .welcome-title{margin:24px 0 10px;color:#f4d68c;font-size:clamp(30px,6vw,48px);line-height:1.5;font-weight:800}
 .welcome-copy{margin:0;color:#c0d5c6;font-size:clamp(14px,2.4vw,17px);line-height:2.1}
 .welcome-progress{height:4px;width:min(280px,70%);margin:30px auto 0;background:rgba(240,217,158,.18);border-radius:9px;overflow:hidden}
@@ -73,6 +86,7 @@
 @media(max-width:520px){.site-footer{justify-content:space-between;gap:13px}.footer-note{order:3;width:100%;text-align:center;padding-top:4px}.hamrahyar-credit{margin-inline-start:auto}}
 @media(prefers-reduced-motion:reduce){.hy-orbit{animation:none}.hamrahyar-credit{transition:none}}
 
+button:disabled,[data-bamland-busy="true"]{opacity:.62;cursor:wait!important;filter:saturate(.72)}
 </style>
 </head>
 <body>\n<section class="welcome-screen" id="welcome-screen" aria-label="خوش آمدید">
@@ -84,10 +98,15 @@
       <g fill="#76bd72" stroke="#b3e39a" stroke-width="1.2"><path d="M60 103Q29 80 35 62Q64 69 60 103Z"/><path d="M246 83Q266 52 284 65Q276 91 246 83Z"/><path d="M83 241Q55 251 49 229Q73 221 83 241Z"/><path d="M245 235Q270 230 279 249Q254 263 245 235Z"/><path d="M104 47Q120 23 137 35Q127 56 104 47Z"/><path d="M207 272Q224 248 242 261Q229 282 207 272Z"/></g>
       <g fill="#f7d68a" stroke="#fff0b5" stroke-width="1"><circle cx="83" cy="72" r="7"/><circle cx="83" cy="72" r="3" fill="#fff0b5"/><circle cx="245" cy="119" r="6"/><circle cx="245" cy="119" r="2.5" fill="#fff0b5"/><circle cx="104" cy="253" r="7"/><circle cx="104" cy="253" r="3" fill="#fff0b5"/></g>
       <g fill="none" stroke="url(#neonGold)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"><path d="M139 137h43q-3 30-22 30t-21-30Z"/><path d="M182 143q23-2 17 14q-4 9-17 7"/><path d="M132 174h57M151 124q-8-12 4-20M166 124q-5-12 8-20"/></g>
-      <g class="orb-steam" fill="none" stroke="#f5d58b" stroke-linecap="round" filter="url(#glow)"><path d="M122 105C108 88 133 83 124 65C120 57 125 51 132 45" stroke-width="3" opacity=".85"/><path d="M158 101C143 83 169 75 157 56C152 47 159 39 165 32" stroke-width="3.5" opacity=".95"/><path d="M194 106C180 91 204 82 195 65C191 57 197 51 203 46" stroke-width="2.5" opacity=".75"/></g><text x="160" y="177" text-anchor="middle" direction="rtl" font-family="Vazirmatn, sans-serif" font-weight="800" font-size="35" fill="#fff0b5" stroke="#d8a943" stroke-width=".6" paint-order="stroke" filter="url(#glow)">باملند</text><path d="M105 190Q160 201 215 190" fill="none" stroke="#e8b84f" stroke-width="1.5" opacity=".8"/><text x="160" y="216" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" letter-spacing="3" fill="#e4c67f">COFFEE · MORE</text>
+      <g class="orb-steam" fill="none" stroke="#f5d58b" stroke-linecap="round" filter="url(#glow)"><path d="M122 105C108 88 133 83 124 65C120 57 125 51 132 45" stroke-width="3" opacity=".85"/><path d="M158 101C143 83 169 75 157 56C152 47 159 39 165 32" stroke-width="3.5" opacity=".95"/><path d="M194 106C180 91 204 82 195 65C191 57 197 51 203 46" stroke-width="2.5" opacity=".75"/></g><path d="M105 190Q160 201 215 190" fill="none" stroke="#e8b84f" stroke-width="1.5" opacity=".8"/><text x="160" y="216" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" letter-spacing="3" fill="#e4c67f">COFFEE · MORE</text>
     </svg>
-    <h1 class="welcome-title" id="welcome-title">به باملند خوش آمدید!</h1>
-    <p class="welcome-copy">یک مکث دلنشین، یک طعم به‌یادماندنی<br>در حال آماده‌سازی منوی شما...</p>
+    <div class="welcome-brand" aria-label="Bamland">
+      <div class="welcome-brand-word"><span>BAM</span><span>LAND</span></div>
+      <div class="welcome-brand-caption"><i>✦</i> COFFEE · PLANTS · MOMENTS <i>✦</i></div>
+      <div class="welcome-brand-persian">بــاملند <span>·</span> کافه‌ای برای مکث‌های دلنشین</div>
+    </div>
+    <h1 class="welcome-title" id="welcome-title">لحظه‌ات را خوش‌طعم کن</h1>
+    <p class="welcome-copy">قهوه، آرامش و حال خوب؛ فقط چند ثانیه تا دنیای باملند</p>
     <div class="welcome-progress"><span></span></div>
   </div>
 </section>
@@ -167,6 +186,52 @@
 </div>
 <div class="toast" id="toast" role="status"></div>
 <script>
+/* Prevent duplicate in-flight actions from rapid clicks/submits. */
+(function installBusyActionGuard(){
+ const nativeAdd=EventTarget.prototype.addEventListener;
+ const busy=new WeakSet();
+ function controlFor(event,target){
+  if(event.type==="submit")return event.submitter||target.querySelector?.('button[type="submit"],input[type="submit"],button:not([type])')||null;
+  if(event.type==="click")return event.target?.closest?.('button,input[type="button"],input[type="submit"],[role="button"]')||null;
+  if(event.type==="change"&&event.target?.matches?.('select,input[type="checkbox"],input[type="radio"]'))return event.target;
+  return null;
+ }
+ function lock(control){
+  if(!control)return false;
+  if(busy.has(control))return false;
+  busy.add(control);
+  control.dataset.bamlandBusy="true";
+  control.setAttribute("aria-busy","true");
+  if("disabled" in control){control.__bamlandWasDisabled=!!control.disabled;control.disabled=true}
+  return true;
+ }
+ function unlock(control){
+  if(!control)return;
+  busy.delete(control);
+  delete control.dataset.bamlandBusy;
+  control.removeAttribute("aria-busy");
+  if("disabled" in control&&!control.__bamlandWasDisabled&&!control.dataset.bamlandPermanentlyLocked)control.disabled=false;
+  delete control.__bamlandWasDisabled;
+ }
+ EventTarget.prototype.addEventListener=function(type,listener,options){
+  if(!listener||typeof listener!=="function"||!["click","submit","change"].includes(type))return nativeAdd.call(this,type,listener,options);
+  const target=this;
+  const wrapped=function(event){
+   const control=controlFor(event,target);
+   const asyncListener=listener.constructor?.name==="AsyncFunction";
+   if(asyncListener&&control&&!lock(control)){if(event.type==="submit")event.preventDefault();return}
+   let result;
+   try{result=listener.call(this,event)}catch(error){if(asyncListener)unlock(control);throw error}
+   if(result&&typeof result.then==="function"){
+    if(!asyncListener&&control&&!lock(control)){return result}
+    return result.finally(()=>unlock(control));
+   }
+   if(asyncListener)unlock(control);
+   return result;
+  };
+  return nativeAdd.call(this,type,wrapped,options);
+ };
+})();
 const categories=[
  {id:"mocktail",name:"Mocktail",fa:"ماکتل و نوشیدنی‌های ترکیبی",icon:"◉",sub:"ترکیب‌های خنک و رنگارنگ",items:[
   ["موهیتو کلاسیک","نعناع تازه، لیموترش و خنکی دلچسب",145000,7,"drink"],
