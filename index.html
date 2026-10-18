@@ -304,7 +304,10 @@ function renderOrderStatus(data){
  $("#order-summary").innerHTML='<div class="notice" style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><strong>وضعیت سفارش</strong><span class="pill">'+escapeHtml(statusText)+'</span></div><p style="font-size:12px;color:var(--muted);margin:8px 0">'+escapeHtml(statusHint)+'</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><small style="color:var(--muted)">میز</small><div><b>'+escapeHtml(data.table?.name||"میز شما")+'</b></div></div><div><small style="color:var(--muted)">شماره سفارش</small><div><b>'+escapeHtml(String(order.id||"").slice(0,8).toUpperCase())+'</b></div></div><div><small style="color:var(--muted)">زمان انتظار باقی‌مانده (تخمینی)</small><div id="order-countdown" style="font-size:22px;font-weight:800;color:var(--gold)">'+(status==="ready"||status==="served"||terminal?"—":formatRemaining(remaining))+'</div></div><div><small style="color:var(--muted)">مبلغ سفارش</small><div><b>'+format(order.total||0)+'</b></div></div></div></div><div class="cart-items">'+items.map(it=>'<div class="cart-row"><div><strong>'+escapeHtml(it.item_name)+'</strong><small>'+format(it.unit_price)+' · هر عدد</small></div><span>× '+new Intl.NumberFormat("fa-IR").format(it.quantity)+'</span><b class="price">'+format(it.line_total)+'</b></div>').join("")+'</div><p style="font-size:11px;color:var(--muted)">وضعیت سفارش هر ۱۲ ثانیه به‌روزرسانی می‌شود. شمارش معکوس تخمینی است؛ وضعیت واقعی را مدیریت به‌روزرسانی می‌کند.</p>';
  const closed=status==="settled"||status==="cancelled";
  $("#feedback-submit").disabled=closed;
+ $("#feedback-message").disabled=closed;
+ $("#feedback-rating").disabled=closed;
  if(closed){$("#feedback-status").textContent="این سفارش بسته شده است و دیگر امکان ارسال پیام وجود ندارد."}
+ else if(order.id&&localStorage.getItem("bamland-feedback-submitted:"+order.id)){lockFeedbackForm(order.id,"برای این سفارش قبلاً نظر ثبت شده است؛ امکان ارسال دوباره وجود ندارد.")}
  updateOrderCountdown();
 }
 function updateOrderCountdown(){
