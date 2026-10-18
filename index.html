@@ -246,7 +246,6 @@ async function loadAvailableTables(){
  const select=$("#table-number");
  try{
   const tables=await supabaseGet("cafe_tables?select=id,name,qr_token&is_active=eq.true&is_available=eq.true&order=sort_order.asc");
-  const qrToken=new URLSearchParams(location.search).get("table");
   select.innerHTML='<option value="">انتخاب میز آزاد…</option>'+tables.map(t=>'<option value="'+escapeHtml(t.id)+'" data-qr-token="'+escapeHtml(t.qr_token)+'">'+escapeHtml(t.name)+'</option>').join("");
   if(qrToken){
    const match=[...select.options].find(option=>option.dataset.qrToken===qrToken);
@@ -289,9 +288,8 @@ function startOrderPolling(qrToken,sessionToken){
  },12000);
 }
 async function checkForExistingOrder(){
- const fromUrl=new URLSearchParams(location.search).get("table");
  let saved=null;try{saved=JSON.parse(localStorage.getItem("bamland-active-order")||"null")}catch{}
- const qrToken=fromUrl||(saved?.qr_token||"");
+ const qrToken=saved?.qr_token||"";
  if(!qrToken)return;
  const sessionToken=localStorage.getItem("bamland-session:"+qrToken)||"";
  try{
