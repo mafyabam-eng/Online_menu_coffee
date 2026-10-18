@@ -249,10 +249,7 @@ async function loadAvailableTables(){
   const tables=await supabaseGet("cafe_tables?select=id,name,qr_token&is_active=eq.true&is_available=eq.true&order=sort_order.asc");
   const previousValue=select.value;
   select.innerHTML='<option value="">انتخاب میز آزاد…</option>'+tables.map(t=>'<option value="'+escapeHtml(t.id)+'" data-qr-token="'+escapeHtml(t.qr_token)+'">'+escapeHtml(t.name)+'</option>').join("");
-  if(qrToken){
-   const match=[...select.options].find(option=>option.dataset.qrToken===qrToken);
-   if(match)select.value=match.value;
-  }else if(tables.some(t=>t.id===previousValue)){
+  if(tables.some(t=>t.id===previousValue)){
    select.value=previousValue;
   }
   if(!tables.length){
