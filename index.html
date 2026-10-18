@@ -365,14 +365,26 @@ async function requestOrderStatus(qrToken,sessionToken){
  if(!response.ok)throw new Error("وضعیت سفارش در دسترس نیست");
  return response.json();
 }
+function finishSettledCustomerOrder(qrToken){
+ if(window.bamlandOrderPoll){clearInterval(window.bamlandOrderPoll);window.bamlandOrderPoll=null}
+ localStorage.removeItem("bamland-session:"+qrToken);
+ const saved=JSON.parse(localStorage.getItem("bamland-active-order")||"null");
+ if(saved?.qr_token===qrToken)localStorage.removeItem("bamland-active-order");
+ currentCustomerOrder=null;
+ $("#order-overlay").classList.remove("open");
+ document.body.style.overflow="";
+ toast("سفارش تسویه شد؛ می‌توانید برای میز آزاد دیگری سفارش جدید ثبت کنید.");
+ loadAvailableTables();
+}
 function startOrderPolling(qrToken,sessionToken){
  if(window.bamlandOrderPoll)clearInterval(window.bamlandOrderPoll);
  window.bamlandOrderPoll=setInterval(async()=>{
   try{
    const data=await requestOrderStatus(qrToken,sessionToken);
+   if(data.order?.status==="settled"){finishSettledCustomerOrder(qrToken);return}
    if(data.active&&data.owned){renderOrderStatus(data);return}
    const saved=JSON.parse(localStorage.getItem("bamland-active-order")||"null");
-   if(data.order&&(data.order.status==="settled"||data.order.status==="cancelled")){
+   if(data.order?.status==="cancelled"){
     renderOrderStatus(data);
     clearInterval(window.bamlandOrderPoll);window.bamlandOrderPoll=null;
     localStorage.removeItem("bamland-session:"+qrToken);
@@ -380,7 +392,6 @@ function startOrderPolling(qrToken,sessionToken){
     $("#order-title").textContent="سفارش بسته شد";
     $("#order-summary").insertAdjacentHTML("beforeend",'<button class="primary" id="start-new-order" style="margin-top:12px">بازگشت به منو و سفارش جدید</button>');
     $("#start-new-order").addEventListener("click",()=>{ $("#order-overlay").classList.remove("open");document.body.style.overflow="";loadAvailableTables(); });
-    return;
    }
   }catch(e){console.warn("Order status refresh failed",e)}
  },12000);
@@ -392,6 +403,7 @@ async function checkForExistingOrder(){
  const sessionToken=localStorage.getItem("bamland-session:"+qrToken)||"";
  try{
   const data=await requestOrderStatus(qrToken,sessionToken);
+  if(data.order?.status==="settled"){finishSettledCustomerOrder(qrToken);return}
   if(data.active&&data.owned){
    localStorage.setItem("bamland-active-order",JSON.stringify({table_id:data.table.id,qr_token:qrToken,session_token:sessionToken,order_id:data.order.id}));
    renderOrderStatus(data);$("#order-overlay").classList.add("open");document.body.style.overflow="hidden";startOrderPolling(qrToken,sessionToken);
