@@ -263,7 +263,8 @@ async function loadAvailableTables(){
   }
  }catch(error){
   select.innerHTML='<option value="">دریافت میزها ناموفق بود؛ دوباره تلاش کن</option>';
-  $("#table-help").textContent="دریافت فهرست میزها موقتاً ناموفق بود. دکمه «ادامه و ثبت میز» را دوباره بزن یا صفحه را تازه‌سازی کن.";
+  const detail=String(error?.message||error||"خطای نامشخص");
+  $("#table-help").textContent="خطای دریافت میزها: "+detail+" — لطفاً صفحه را تازه‌سازی کن.";
   console.error("Available tables unavailable.",error);
  }finally{
   select.disabled=false;
