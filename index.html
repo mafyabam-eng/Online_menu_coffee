@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#082c20">
 <meta name="description" content="منوی دیجیتال کافه باملند">
 <title>BAMLAND — منوی کافه</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -118,7 +119,7 @@
     <button class="primary" id="continue-checkout">ادامه و ثبت میز</button>
     <div id="checkout" hidden>
       <div class="checkout-fields"><select id="table-number" aria-label="انتخاب میز" required><option value="">در حال دریافت میزهای آزاد…</option></select><p id="table-help" style="font-size:11px;color:var(--muted);margin:0">فقط میزهای آزاد نمایش داده می‌شوند؛ میزهای دارای سفارش فعال قابل انتخاب نیستند.</p></div>
-      <button class="primary" id="demo-submit">ادامه سفارش</button>
+      <button class="primary" id="demo-submit">ثبت سفارش</button>
     </div>
   </section>
 </div>
@@ -175,7 +176,7 @@ $("#open-cart").addEventListener("click",()=>{$("#cart-overlay").classList.add("
 function closeCart(){$("#cart-overlay").classList.remove("open");document.body.style.overflow=""}
 $("#close-cart").addEventListener("click",closeCart);$("#cart-overlay").addEventListener("click",e=>{if(e.target.id==="cart-overlay")closeCart()});
 $("#cart-items").addEventListener("click",e=>{const b=e.target.closest("[data-qty]");if(!b)return;const key=b.dataset.qty;cart[key]=(cart[key]||0)+Number(b.dataset.delta);if(cart[key]<=0)delete cart[key];updateCart()});
-$("#continue-checkout").addEventListener("click",async()=>{$("#checkout").hidden=false;$("#table-number").disabled=true;$("#table-help").textContent="در حال به‌روزرسانی فهرست میزهای آزاد…";await loadAvailableTables();$("#table-number").focus()});
+$("#continue-checkout").addEventListener("click",async()=>{$("#checkout").hidden=false;$("#continue-checkout").hidden=true;$("#table-number").disabled=true;$("#table-help").textContent="در حال به‌روزرسانی فهرست میزهای آزاد…";await loadAvailableTables();$("#table-number").focus()});
 async function createCustomerOrder(){
  const tableSelect=$("#table-number"),tableId=tableSelect.value;
  if(!tableId){toast("لطفاً یک میز آزاد انتخاب کن");tableSelect.focus();return}
@@ -268,6 +269,18 @@ async function loadAvailableTables(){
   select.disabled=false;
  }
 }
+
+const liveClient=window.supabase?.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+if(liveClient){
+ const debounceLive=(key,fn,delay=250)=>{const prop="__"+key;if(window[prop])clearTimeout(window[prop]);window[prop]=setTimeout(fn,delay)};
+ liveClient.channel("bamland-live-menu")
+  .on("postgres_changes",{event:"*",schema:"public",table:"cafe_tables"},()=>debounceLive("tableLiveRefresh",()=>loadAvailableTables().catch(console.warn),200))
+  .on("postgres_changes",{event:"*",schema:"public",table:"orders"},()=>debounceLive("orderLiveRefresh",async()=>{const saved=JSON.parse(localStorage.getItem("bamland-active-order")||"null");if(saved?.qr_token&&saved?.session_token){try{const d=await requestOrderStatus(saved.qr_token,saved.session_token);if(d.active&&d.owned)renderOrderStatus(d);else if(d.order)renderOrderStatus(d)}catch(e){console.warn("Live order refresh failed",e)}}loadAvailableTables().catch(console.warn)},200))
+  .on("postgres_changes",{event:"*",schema:"public",table:"menu_items"},()=>debounceLive("menuLiveRefresh",()=>loadLiveMenu(),400))
+  .on("postgres_changes",{event:"*",schema:"public",table:"menu_categories"},()=>debounceLive("categoryLiveRefresh",()=>loadLiveMenu(),400))
+  .on("postgres_changes",{event:"*",schema:"public",table:"cafe_settings"},()=>debounceLive("settingsLiveRefresh",()=>loadLiveMenu(),400))
+  .subscribe();
+}
 const orderStatusLabels={pending:"در انتظار پذیرش مدیریت",accepted:"سفارش پذیرفته شد",preparing:"در حال آماده‌سازی",ready:"سفارش آماده است",served:"سفارش تحویل داده شد",settled:"سفارش تسویه شده",cancelled:"سفارش لغو شده"};
 let currentCustomerOrder=null;
 function remainingWaitMs(order){
@@ -302,12 +315,15 @@ function updateOrderCountdown(){
  node.textContent=formatRemaining(remainingWaitMs(currentCustomerOrder));
 }
 window.bamlandCountdownTimer=setInterval(updateOrderCountdown,1000);
-const memorySymbols=["☕","🌿","🧋","🍰","☕","🌿","🧋","🍰"];
-let memoryDeck=[],memoryOpen=[],memoryMatched=[],memoryMoves=0,memoryLocked=false;
-function shuffleCards(){memoryDeck=[...memorySymbols].sort(()=>Math.random()-.5);memoryOpen=[];memoryMatched=[];memoryMoves=0;memoryLocked=false;renderMemoryGame()}
+let memoryDeck=[],memoryOpen=[],memoryMatched=[],memoryMoves=0,memoryLocked=false,memoryLevel=1,memorySymbols=[];
+const memorySymbolPool=["☕","🌿","🧋","🍰","🍪","🪴","🍓","🥐","🍵","🍫","🍋","🧁","🍉","🥝","🍇","🥥","🍯","🫖","🍬","🍩"];
+function shuffleCards(){const pairs=Math.min(10,3+memoryLevel);memorySymbols=memorySymbolPool.slice(0,pairs);memoryDeck=[...memorySymbols,...memorySymbols].sort(()=>Math.random()-.5);memoryOpen=[];memoryMatched=[];memoryMoves=0;memoryLocked=false;renderMemoryGame()}
 function renderMemoryGame(){
- $("#memory-game").innerHTML=memoryDeck.map((symbol,i)=>'<button type="button" data-memory-card="'+i+'" aria-label="کارت '+(memoryMatched.includes(i)||memoryOpen.includes(i)?symbol:"بسته")+'" style="min-height:58px;border:1px solid var(--line);border-radius:12px;background:'+(memoryMatched.includes(i)?"#285b43":"#123b2b")+';color:var(--cream);font-size:25px">'+(memoryMatched.includes(i)||memoryOpen.includes(i)?symbol:"✦")+'</button>').join("");
- $("#memory-game-status").textContent=memoryMatched.length===8?"آفرین! همه جفت‌ها را در "+new Intl.NumberFormat("fa-IR").format(memoryMoves)+" حرکت پیدا کردی.": "حرکت‌ها: "+new Intl.NumberFormat("fa-IR").format(memoryMoves)+" · جفت‌های پیدا شده: "+new Intl.NumberFormat("fa-IR").format(memoryMatched.length/2)+" از ۴";
+ const cols=memoryDeck.length<=8?4:memoryDeck.length<=12?4:5;$("#memory-game").style.gridTemplateColumns="repeat("+cols+",minmax(0,1fr))";
+ $("#memory-game").innerHTML=memoryDeck.map((symbol,i)=>'<button type="button" data-memory-card="'+i+'" aria-label="کارت '+(memoryMatched.includes(i)||memoryOpen.includes(i)?symbol:"بسته")+'" style="min-height:52px;border:1px solid var(--line);border-radius:12px;background:'+(memoryMatched.includes(i)?"#285b43":"#123b2b")+';color:var(--cream);font-size:23px">'+(memoryMatched.includes(i)||memoryOpen.includes(i)?symbol:"✦")+'</button>').join("");
+ const pairs=memorySymbols.length,done=memoryMatched.length===memoryDeck.length;
+ $("#memory-game-status").textContent=done?"آفرین! مرحله "+new Intl.NumberFormat("fa-IR").format(memoryLevel)+" را کامل کردی. برای رفتن به مرحله بعد دکمه زیر را بزن.":"مرحله "+new Intl.NumberFormat("fa-IR").format(memoryLevel)+" · حرکت‌ها: "+new Intl.NumberFormat("fa-IR").format(memoryMoves)+" · جفت‌ها: "+new Intl.NumberFormat("fa-IR").format(memoryMatched.length/2)+" از "+new Intl.NumberFormat("fa-IR").format(pairs);
+ $("#memory-game-reset").textContent=done?"مرحله بعد ← "+new Intl.NumberFormat("fa-IR").format(Math.min(10,3+memoryLevel+1)*2)+" کارت":"شروع دوباره مرحله";
 }
 $("#memory-game").addEventListener("click",e=>{
  const button=e.target.closest("[data-memory-card]");if(!button||memoryLocked)return;
@@ -315,7 +331,7 @@ $("#memory-game").addEventListener("click",e=>{
  memoryOpen.push(i);renderMemoryGame();
  if(memoryOpen.length===2){memoryMoves++;const [a,b]=memoryOpen;if(memoryDeck[a]===memoryDeck[b]){memoryMatched.push(a,b);memoryOpen=[];renderMemoryGame()}else{memoryLocked=true;setTimeout(()=>{memoryOpen=[];memoryLocked=false;renderMemoryGame()},700)}}
 });
-$("#memory-game-reset").addEventListener("click",shuffleCards);shuffleCards();
+$("#memory-game-reset").addEventListener("click",()=>{if(memoryMatched.length===memoryDeck.length)memoryLevel++;shuffleCards()});shuffleCards();
 $("#feedback-submit").addEventListener("click",async()=>{
  const saved=JSON.parse(localStorage.getItem("bamland-active-order")||"null");
  const token=saved?.session_token||"";const orderId=currentCustomerOrder?.id;
@@ -325,8 +341,8 @@ $("#feedback-submit").addEventListener("click",async()=>{
  const button=$("#feedback-submit");button.disabled=true;status.textContent="در حال ارسال…";
  try{
   const response=await fetch(SUPABASE_URL+"/rest/v1/rpc/submit_anonymous_customer_feedback",{method:"POST",headers:{apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY,"Content-Type":"application/json"},body:JSON.stringify({p_order_id:orderId,p_session_token:token,p_rating:rating?Number(rating):null,p_message:message})});
-  if(!response.ok)throw new Error("ارسال پیام انجام نشد ("+response.status+")");
-  status.textContent="پیام ناشناس شما برای مدیریت ثبت شد. سپاس از همراهی‌تان 🌿";$("#feedback-message").value="";$("#feedback-rating").value="";
+  if(!response.ok){if(response.status===409){button.disabled=true;status.textContent="برای این سفارش قبلاً نظر ثبت شده است؛ امکان ثبت نظر دوم وجود ندارد.";return}throw new Error("ارسال پیام انجام نشد ("+response.status+")")}
+  status.textContent="پیام ناشناس شما برای مدیریت ثبت شد. سپاس از همراهی‌تان 🌿";$("#feedback-message").value="";$("#feedback-rating").value="";button.disabled=true;$("#feedback-message").disabled=true;$("#feedback-rating").disabled=true;
  }catch(error){status.textContent=error.message||"ارسال پیام ناموفق بود."}
  finally{button.disabled=false}
 });
