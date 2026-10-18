@@ -10,8 +10,16 @@ Deno.serve(async(req:Request)=>{
   if(!/^[0-9a-f-]{36}$/i.test(qr))return reply(400,{error:"invalid_qr"});
   const {data:table,error:te}=await db.from("cafe_tables").select("id,name,is_active").eq("qr_token",qr).maybeSingle();
   if(te)throw te;if(!table||!table.is_active)return reply(404,{active:false});
-  const {data:order,error:oe}=await db.from("orders").select("id,status,customer_session_token,total,estimated_wait_minutes,created_at,updated_at").eq("table_id",table.id).not("status","in",'("settled","cancelled")').maybeSingle();
-  if(oe)throw oe;if(!order)return reply(200,{active:false,table:{id:table.id,name:table.name}});
+  let {data:order,error:oe}=await db.from("orders").select("id,status,customer_session_token,total,estimated_wait_minutes,created_at,updated_at").eq("table_id",table.id).not("status","in",'("settled","cancelled")').maybeSingle();
+  if(oe)throw oe;
+  if(!order){
+   const {data:closedOrder,error:ce}=await db.from("orders").select("id,status,customer_session_token,total,estimated_wait_minutes,created_at,updated_at").eq("table_id",table.id).eq("customer_session_token",token).in("status",["settled","cancelled"]).order("updated_at",{ascending:false}).limit(1).maybeSingle();
+   if(ce)throw ce;
+   if(!closedOrder)return reply(200,{active:false,table:{id:table.id,name:table.name}});
+   const {data:closedLines,error:cle}=await db.from("order_items").select("item_name,unit_price,quantity,line_total").eq("order_id",closedOrder.id);
+   if(cle)throw cle;
+   return reply(200,{active:false,owned:true,table:{id:table.id,name:table.name},order:closedOrder,items:closedLines||[]});
+  }
   if(order.customer_session_token!==token)return reply(200,{active:true,owned:false,table:{id:table.id,name:table.name}});
   const {data:lines,error:le}=await db.from("order_items").select("item_name,unit_price,quantity,line_total").eq("order_id",order.id);
   if(le)throw le;return reply(200,{active:true,owned:true,table:{id:table.id,name:table.name},order,items:lines||[]});
