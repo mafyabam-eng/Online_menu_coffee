@@ -289,11 +289,14 @@ $("#open-cart").addEventListener("click",()=>{$("#cart-overlay").classList.add("
 function closeCart(){$("#cart-overlay").classList.remove("open");document.body.style.overflow=""}
 $("#close-cart").addEventListener("click",closeCart);$("#cart-overlay").addEventListener("click",e=>{if(e.target.id==="cart-overlay")closeCart()});
 $("#cart-items").addEventListener("click",e=>{const b=e.target.closest("[data-qty]");if(!b)return;const key=b.dataset.qty;cart[key]=(cart[key]||0)+Number(b.dataset.delta);if(cart[key]<=0)delete cart[key];updateCart()});
-$("#continue-checkout").addEventListener("click",async()=>{$("#checkout").hidden=false;$("#continue-checkout").hidden=true;$("#table-number").disabled=true;$("#table-help").textContent="در حال به‌روزرسانی فهرست میزهای آزاد…";await loadAvailableTables();$("#table-number").focus()});
+$("#continue-checkout").addEventListener("click",async()=>{$("#checkout").hidden=false;$("#continue-checkout").hidden=true;const saved=JSON.parse(localStorage.getItem("bamland-active-order")||"null");const canAppend=!!(currentCustomerOrder&&saved?.order_id===currentCustomerOrder.id&&saved?.table_id&&saved?.qr_token&&!["settled","cancelled"].includes(currentCustomerOrder.status));if(canAppend){$("#table-number").disabled=true;$("#table-number").hidden=true;$("#table-help").textContent="محصول‌های انتخابی مستقیماً به سفارش باز همین میز اضافه می‌شوند.";$("#demo-submit").textContent="افزودن به سفارش";}else{$("#table-number").disabled=false;$("#table-number").hidden=false;$("#demo-submit").textContent="ثبت سفارش";$("#table-help").textContent="در حال به‌روزرسانی فهرست میزهای آزاد…";await loadAvailableTables();$("#table-number").focus()}});
 async function createCustomerOrder(){
- const tableSelect=$("#table-number"),tableId=tableSelect.value;
+ const tableSelect=$("#table-number");
+ const savedOrder=JSON.parse(localStorage.getItem("bamland-active-order")||"null");
+ const appendToOpen=!!(currentCustomerOrder&&savedOrder?.order_id===currentCustomerOrder.id&&savedOrder?.table_id&&savedOrder?.qr_token&&!["settled","cancelled"].includes(currentCustomerOrder.status));
+ const tableId=appendToOpen?savedOrder.table_id:tableSelect.value;
  if(!tableId){toast("لطفاً یک میز آزاد انتخاب کن");tableSelect.focus();return}
- const chosen=[...tableSelect.options].find(o=>o.value===tableId),qrToken=chosen?.dataset.qrToken;
+ const chosen=[...tableSelect.options].find(o=>o.value===tableId),qrToken=appendToOpen?savedOrder.qr_token:chosen?.dataset.qrToken;
  const needsFlavor=Object.entries(cart).some(([key,q])=>{if(q<=0)return false;const[cid]=key.split(":");const cat=categories.find(c=>c.id===cid);return !!cat&&cat.fa.includes("قلیان")});
  const hookahFlavor=$("#hookah-flavor").value;
  if(needsFlavor&&!hookahFlavor){toast("برای سرویس قلیان، لطفاً طعم را انتخاب کن");$("#hookah-flavor").focus();return}
@@ -320,10 +323,10 @@ async function createCustomerOrder(){
   }
   const order=data.order;
   localStorage.setItem("bamland-active-order",JSON.stringify({table_id:tableId,qr_token:qrToken,session_token:sessionToken,order_id:order.id}));
-  renderOrderStatus({active:true,owned:true,table:{name:chosen.textContent},order,items:data.items||[]});
+  renderOrderStatus({active:true,owned:true,table:{name:chosen?.textContent||"میز شما"},order,items:data.items||[]});
   Object.keys(cart).forEach(k=>delete cart[k]);updateCart();closeCart();$("#order-overlay").classList.add("open");document.body.style.overflow="hidden";startOrderPolling(qrToken,sessionToken);
  }catch(error){toast(error.message||"خطا در ثبت سفارش")}
- finally{button.disabled=false;button.textContent="ثبت سفارش"}
+ finally{button.disabled=false;button.textContent=(appendToOpen?"افزودن به سفارش":"ثبت سفارش")}
 }
 $("#demo-submit").addEventListener("click",createCustomerOrder);
 function closeOrder(){ if(localStorage.getItem("bamland-active-order")){toast("تا زمان بسته‌شدن سفارش، پیگیری سفارش همین‌جا در دسترس می‌ماند.");return} $("#order-overlay").classList.remove("open");document.body.style.overflow=""; }
@@ -417,7 +420,7 @@ function renderOrderStatus(data){
  const remaining=remainingWaitMs(order);
  const statusText=orderStatusLabels[status]||status;
  const statusHint=({pending:"سفارش شما ثبت شده و منتظر تأیید مدیریت است.",accepted:"سفارش تأیید شده و در صف آماده‌سازی قرار دارد.",preparing:"سفارش شما در حال آماده‌سازی است.",ready:"سفارش آماده تحویل است؛ لطفاً به راهنمایی کارکنان توجه کنید.",served:"سفارش به شما تحویل داده شده است.",settled:"این سفارش تسویه شده است.",cancelled:"این سفارش لغو شده است."})[status]||"وضعیت سفارش به‌روزرسانی می‌شود.";
- $("#order-summary").innerHTML='<div class="notice" style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><strong>وضعیت سفارش</strong><span class="pill">'+escapeHtml(statusText)+'</span></div><p style="font-size:12px;color:var(--muted);margin:8px 0">'+escapeHtml(statusHint)+'</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><small style="color:var(--muted)">میز</small><div><b>'+escapeHtml(data.table?.name||"میز شما")+'</b></div></div><div><small style="color:var(--muted)">شماره سفارش</small><div><b>'+escapeHtml(String(order.id||"").slice(0,8).toUpperCase())+'</b></div></div><div><small style="color:var(--muted)">زمان انتظار باقی‌مانده (تخمینی)</small><div id="order-countdown" style="font-size:22px;font-weight:800;color:var(--gold)">'+(status==="ready"||status==="served"||terminal?"—":formatRemaining(remaining))+'</div></div><div><small style="color:var(--muted)">مبلغ سفارش</small><div><b>'+format(order.total||0)+'</b></div></div></div></div><div class="cart-items">'+items.map(it=>'<div class="cart-row"><div><strong>'+escapeHtml(it.item_name)+'</strong><small>'+format(it.unit_price)+' · هر عدد</small></div><span>× '+new Intl.NumberFormat("fa-IR").format(it.quantity)+'</span><b class="price">'+format(it.line_total)+'</b></div>').join("")+'</div><p style="font-size:11px;color:var(--muted)">وضعیت سفارش هر ۱۲ ثانیه به‌روزرسانی می‌شود. شمارش معکوس تخمینی است؛ وضعیت واقعی را مدیریت به‌روزرسانی می‌کند.</p>';
+ $("#order-summary").innerHTML='<div class="notice" style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><strong>وضعیت سفارش</strong><span class="pill">'+escapeHtml(statusText)+'</span></div><p style="font-size:12px;color:var(--muted);margin:8px 0">'+escapeHtml(statusHint)+'</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><small style="color:var(--muted)">میز</small><div><b>'+escapeHtml(data.table?.name||"میز شما")+'</b></div></div><div><small style="color:var(--muted)">شماره سفارش</small><div><b>'+escapeHtml(String(order.id||"").slice(0,8).toUpperCase())+'</b></div></div><div><small style="color:var(--muted)">زمان انتظار باقی‌مانده (تخمینی)</small><div id="order-countdown" style="font-size:22px;font-weight:800;color:var(--gold)">'+(status==="ready"||status==="served"||terminal?"—":formatRemaining(remaining))+'</div></div><div><small style="color:var(--muted)">مبلغ سفارش</small><div><b>'+format(order.total||0)+'</b></div></div></div></div><div class="cart-items">'+items.map(it=>'<div class="cart-row"><div><strong>'+escapeHtml(it.item_name)+'</strong><small>'+format(it.unit_price)+' · هر عدد</small></div><span>× '+new Intl.NumberFormat("fa-IR").format(it.quantity)+'</span><b class="price">'+format(it.line_total)+'</b></div>').join("")+'</div><p style="font-size:11px;color:var(--muted)">وضعیت سفارش هر ۱۲ ثانیه به‌روزرسانی می‌شود. شمارش معکوس تخمینی است؛ وضعیت واقعی را مدیریت به‌روزرسانی می‌کند.</p>'+(terminal?'':'<button type="button" class="primary" id="add-more-to-order" style="margin-top:12px">＋ افزودن محصول به همین سفارش</button>');
  const closed=status==="settled"||status==="cancelled";
  $("#feedback-submit").disabled=closed;
  $("#feedback-message").disabled=closed;
@@ -426,6 +429,7 @@ function renderOrderStatus(data){
  else if(order.id&&localStorage.getItem("bamland-feedback-submitted:"+order.id)){lockFeedbackForm(order.id,"برای این سفارش قبلاً نظر ثبت شده است؛ امکان ارسال دوباره وجود ندارد.")}
  updateOrderCountdown();
 }
+$("#order-summary").addEventListener("click",e=>{if(!e.target.closest("#add-more-to-order"))return;$("#order-overlay").classList.remove("open");document.body.style.overflow="";toast("محصول‌های دلخواه را انتخاب کن و از سبد، «افزودن به سفارش» را بزن.");window.scrollTo({top:document.querySelector("#menu")?.offsetTop||0,behavior:"smooth"})});
 function updateOrderCountdown(){
  const node=$("#order-countdown");if(!node||!currentCustomerOrder)return;
  const status=currentCustomerOrder.status;
