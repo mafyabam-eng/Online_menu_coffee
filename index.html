@@ -288,7 +288,7 @@ $("#search").addEventListener("input",()=>{
  }
  renderProducts();
 });
-$("#open-cart").addEventListener("click",()=>{$("#cart-overlay").classList.add("open");$("#checkout").hidden=true;document.body.style.overflow="hidden"});
+$("#open-cart").addEventListener("click",()=>{$("#cart-overlay").classList.add("open");$("#checkout").hidden=true;$("#continue-checkout").hidden=false;document.body.style.overflow="hidden"});
 function closeCart(){$("#cart-overlay").classList.remove("open");document.body.style.overflow=""}
 $("#close-cart").addEventListener("click",closeCart);$("#cart-overlay").addEventListener("click",e=>{if(e.target.id==="cart-overlay")closeCart()});
 $("#cart-items").addEventListener("click",e=>{const b=e.target.closest("[data-qty]");if(!b)return;const key=b.dataset.qty;cart[key]=(cart[key]||0)+Number(b.dataset.delta);if(cart[key]<=0)delete cart[key];updateCart()});
