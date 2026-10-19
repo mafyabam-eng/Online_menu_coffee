@@ -173,8 +173,9 @@ button:disabled,[data-bamland-busy="true"]{opacity:.62;cursor:wait!important;fil
     <div class="sheet-head"><h3 id="cart-title">سبد انتخاب‌های تو</h3><button class="close" id="close-cart" aria-label="بستن">×</button></div>
     <div class="cart-items" id="cart-items"></div>
     <div class="cart-sum"><span>جمع کل</span><strong id="cart-subtotal">۰ تومان</strong></div>
-    <button class="primary" id="continue-checkout">ادامه و ثبت میز</button><button type="button" class="primary" id="back-to-open-order" hidden style="margin-top:8px;background:transparent;border:1px solid var(--gold);color:var(--gold)">بازگشت به سفارش قبلی</button>
+    <button class="primary" id="continue-checkout">ادامه و ثبت میز</button>
     <div id="checkout" hidden>
+      <button type="button" class="primary" id="back-to-open-order" hidden style="margin:0 0 12px;background:transparent;border:1px solid var(--gold);color:var(--gold)">↩ لغو افزودن و بازگشت به سفارش باز</button>
       <div class="checkout-fields"><select id="table-number" aria-label="انتخاب میز" required><option value="">در حال دریافت میزهای آزاد…</option></select><p id="table-help" style="font-size:11px;color:var(--muted);margin:0">فقط میزهای آزاد نمایش داده می‌شوند؛ میزهای دارای سفارش فعال قابل انتخاب نیستند.</p><div id="hookah-flavor-wrap" hidden style="margin-top:12px"><label for="hookah-flavor" style="display:block;font-size:12px;margin-bottom:6px">طعم قلیان را انتخاب کن <span style="color:#e8b85c">*</span></label><select id="hookah-flavor" aria-label="طعم قلیان"><option value="">انتخاب طعم قلیان…</option><option>آدامس نعنا</option><option>لاو</option><option>شب های مسکو</option><option>لیمو نعنا</option><option>هندوانه</option><option>پرتقال خانه</option><option>بلوری</option><option>شیر نارگیل</option><option>شیر قهوه</option><option>جوکر</option></select><p style="font-size:11px;color:var(--muted);margin:5px 0 0">برای ثبت سرویس قلیان، انتخاب طعم الزامی است.</p></div></div>
       <button class="primary" id="demo-submit">ثبت سفارش</button>
     </div>
