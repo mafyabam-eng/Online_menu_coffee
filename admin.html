@@ -33,7 +33,7 @@ button:disabled,[data-bamland-busy="true"]{opacity:.62;cursor:wait!important;fil
 <nav class="tabs" id="tabs">
 <button class="active" data-view="orders-view">سفارش‌ها</button><button data-view="items-view">منو و محصولات</button><button data-view="categories-view">دسته‌بندی‌ها</button><button data-view="tables-view">میزها</button><button data-view="accounting-view">حسابداری</button><button data-view="analytics-view">آنالیز و آمار</button><button data-view="settings-view">تنظیمات</button><button data-view="reviews-view">نظرات</button>
 </nav>
-<section id="orders-view" class="view active card"><div class="actions" style="justify-content:space-between"><h2>سفارش‌ها</h2><button class="btn secondary" id="refresh-orders">به‌روزرسانی</button></div><div id="orders-list" class="list"></div></section>
+<section id="orders-view" class="view active card"><div class="actions" style="justify-content:space-between;flex-wrap:wrap"><h2>سفارش‌ها</h2><div class="actions"><button class="btn secondary" id="enable-order-sound">فعال‌سازی صدای اعلان</button><button class="btn secondary" id="refresh-orders">به‌روزرسانی</button></div></div><p style="font-size:12px;color:var(--muted);margin:8px 0 12px">اگر سفارش جدید بیش از ۳ دقیقه در انتظار پذیرش بماند، هر ۱ دقیقه صدای یادآوری پخش می‌شود تا وضعیت آن تغییر کند.</p><div id="orders-list" class="list"></div></section>
 <section id="items-view" class="view card"><h2 id="item-form-title">افزودن محصول</h2><form id="item-form" class="fields">
 <input type="hidden" id="item-id">
 <label>نام محصول<input id="item-name" required maxlength="120"></label><label>دسته‌بندی<select id="item-category" required></select></label>
@@ -232,8 +232,23 @@ $("#price-increase-form").addEventListener("submit",async e=>{
 $("#orders-list").addEventListener("change",async e=>{const s=e.target.closest("[data-status]");if(!s)return;try{const patch={status:s.value,updated_at:new Date().toISOString()};if(s.value==="settled")patch.settled_at=new Date().toISOString();await must(await client.from("orders").update(patch).eq("id",s.dataset.status));await loadOrders();await loadTables();updateStats();if(s.value==="settled"||$("#analytics-view").classList.contains("active"))await loadAnalytics("custom");toast(s.value==="settled"?"سفارش تسویه شد؛ از فهرست سفارش‌ها خارج و در آمار فروش ثبت شد.":"وضعیت سفارش تغییر کرد")}catch(e){toast(errText(e));await loadOrders()}});
 $("#orders-list").addEventListener("click",async e=>{const b=e.target.closest("[data-delete-order]");if(!b||!confirm("سفارش حذف شود؟"))return;try{await must(await client.from("orders").delete().eq("id",b.dataset.deleteOrder));await loadOrders();await loadTables();updateStats();toast("سفارش حذف شد")}catch(e){toast(errText(e))}});
 $("#refresh-orders").addEventListener("click",async()=>{try{await loadOrders();await loadTables();updateStats();toast("سفارش‌ها به‌روز شدند")}catch(e){toast(errText(e))}});
+let adminAudioContext=null;
+const orderReminderLastAt=new Map();
+function playAdminOrderSound(reminder=false){
+ if(!adminAudioContext||adminAudioContext.state!=="running")return;
+ const now=adminAudioContext.currentTime,notes=reminder?[660,520,660]:[880,660,880];
+ notes.forEach((frequency,index)=>{const osc=adminAudioContext.createOscillator(),gain=adminAudioContext.createGain(),start=now+index*.16;osc.type="sine";osc.frequency.setValueAtTime(frequency,start);gain.gain.setValueAtTime(.0001,start);gain.gain.exponentialRampToValueAtTime(.16,start+.025);gain.gain.exponentialRampToValueAtTime(.0001,start+.13);osc.connect(gain);gain.connect(adminAudioContext.destination);osc.start(start);osc.stop(start+.14)});
+}
+$("#enable-order-sound").addEventListener("click",async()=>{try{const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx){toast("این مرورگر پخش صدای اعلان را پشتیبانی نمی‌کند.");return}if(!adminAudioContext)adminAudioContext=new Ctx();if(adminAudioContext.state==="suspended")await adminAudioContext.resume();playAdminOrderSound();$("#enable-order-sound").textContent="صدای اعلان فعال است";toast("صدای اعلان فعال شد")}catch(e){toast("فعال‌سازی صدا ناموفق بود؛ دوباره تلاش کن.")}});
+function checkPendingOrderReminders(){
+ if(!currentUser||!adminAudioContext||adminAudioContext.state!=="running")return;
+ const now=Date.now(),pending=orders.filter(o=>o.status==="pending"&&now-Date.parse(o.created_at)>=180000),pendingIds=new Set(pending.map(o=>o.id));
+ for(const id of orderReminderLastAt.keys())if(!pendingIds.has(id))orderReminderLastAt.delete(id);
+ for(const order of pending){const last=orderReminderLastAt.get(order.id)||0;if(now-last>=60000){playAdminOrderSound(true);orderReminderLastAt.set(order.id,now);toast("یادآوری: سفارش میز "+(order.cafe_tables?.name||"نامشخص")+" هنوز در انتظار پذیرش است.")}}
+}
+setInterval(checkPendingOrderReminders,15000);
 client.channel("bamland-admin-live")
- .on("postgres_changes",{event:"*",schema:"public",table:"orders"},async()=>{if(!currentUser)return;try{await loadOrders();await loadTables();updateStats();if($("#analytics-view").classList.contains("active"))await loadAnalytics("custom")}catch(e){console.warn("Realtime order refresh failed",e)}})
+ .on("postgres_changes",{event:"*",schema:"public",table:"orders"},async(payload)=>{if(!currentUser)return;try{if(payload.eventType==="INSERT"){playAdminOrderSound(false);toast("سفارش جدید ثبت شد؛ لطفاً بررسی کنید.")}else if(payload.eventType==="UPDATE"&&payload.old?.total!=null&&payload.new?.total!=null&&Number(payload.old.total)!==Number(payload.new.total)){playAdminOrderSound(false);toast("مبلغ یک سفارش تغییر کرد؛ اقلام جدید را بررسی کنید.")}await loadOrders();await loadTables();updateStats();checkPendingOrderReminders();if($("#analytics-view").classList.contains("active"))await loadAnalytics("custom")}catch(e){console.warn("Realtime order refresh failed",e)}})
  .on("postgres_changes",{event:"*",schema:"public",table:"cafe_tables"},async()=>{if(!currentUser)return;try{await loadTables();updateStats()}catch(e){console.warn("Realtime table refresh failed",e)}})
  .on("postgres_changes",{event:"*",schema:"public",table:"order_items"},async()=>{if(!currentUser)return;try{await loadOrders();updateStats()}catch(e){console.warn("Realtime item refresh failed",e)}})
  .on("postgres_changes",{event:"*",schema:"public",table:"reviews"},async()=>{if(!currentUser)return;try{await loadReviews()}catch(e){console.warn("Realtime review refresh failed",e)}})
