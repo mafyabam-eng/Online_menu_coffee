@@ -402,6 +402,37 @@ if(liveClient){
 }
 const orderStatusLabels={pending:"در انتظار پذیرش مدیریت",accepted:"سفارش پذیرفته شد",preparing:"در حال آماده‌سازی",ready:"سفارش آماده است",served:"سفارش تحویل داده شد",settled:"سفارش تسویه شده",cancelled:"سفارش لغو شده"};
 let currentCustomerOrder=null;
+let customerNoticeAudio=null,customerNoticePending=false;
+function playCustomerStatusNotice(){
+ try{
+  const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+  if(!AudioContextClass)return;
+  if(!customerNoticeAudio)customerNoticeAudio=new AudioContextClass();
+  if(customerNoticeAudio.state==="suspended")customerNoticeAudio.resume().catch(()=>{});
+  if(customerNoticeAudio.state!=="running"){customerNoticePending=true;return}
+  customerNoticePending=false;
+  const now=customerNoticeAudio.currentTime;
+  [[880,0],[1175,.16]].forEach(([frequency,offset])=>{
+   const oscillator=customerNoticeAudio.createOscillator(),gain=customerNoticeAudio.createGain();
+   oscillator.type="sine";oscillator.frequency.setValueAtTime(frequency,now+offset);
+   gain.gain.setValueAtTime(.0001,now+offset);
+   gain.gain.exponentialRampToValueAtTime(.48,now+offset+.025);
+   gain.gain.exponentialRampToValueAtTime(.0001,now+offset+.24);
+   oscillator.connect(gain);gain.connect(customerNoticeAudio.destination);
+   oscillator.start(now+offset);oscillator.stop(now+offset+.26);
+  });
+ }catch(error){console.warn("Customer status sound unavailable",error)}
+}
+async function unlockCustomerNoticeAudio(){
+ try{
+  const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+  if(!AudioContextClass)return;
+  if(!customerNoticeAudio)customerNoticeAudio=new AudioContextClass();
+  await customerNoticeAudio.resume();
+  if(customerNoticeAudio.state==="running"&&customerNoticePending)playCustomerStatusNotice();
+ }catch(error){console.warn("Could not unlock customer notification sound",error)}
+}
+["pointerdown","keydown","touchstart"].forEach(eventName=>document.addEventListener(eventName,unlockCustomerNoticeAudio,{once:true,passive:true}));
 function remainingWaitMs(order){
  const minutes=Math.max(0,Number(order.estimated_wait_minutes||0));
  const created=Date.parse(order.created_at||"");
@@ -414,8 +445,10 @@ function formatRemaining(ms){
 }
 function renderOrderStatus(data){
  const order=data.order||{},items=data.items||[];
- currentCustomerOrder=order;
+ const previousOrder=currentCustomerOrder;
  const status=order.status||"pending";
+ if(previousOrder?.id&&previousOrder.id===order.id&&previousOrder.status&&previousOrder.status!==status)playCustomerStatusNotice();
+ currentCustomerOrder=order;
  const terminal=status==="settled"||status==="cancelled";
  const remaining=remainingWaitMs(order);
  const statusText=orderStatusLabels[status]||status;
