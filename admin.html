@@ -118,7 +118,7 @@ async function loadItems(){items=await must(await client.from("menu_items").sele
 async function loadTables(){tables=await must(await client.from("cafe_tables").select("*").order("sort_order"));$("#tables-list").innerHTML=tables.map(t=>'<article class="item"><div class="grow"><strong>'+esc(t.name)+'</strong><small>'+(t.is_active?"فعال":"غیرفعال")+(t.is_available?" · آزاد":" · دارای سفارش فعال")+'</small></div><div class="actions"><button class="btn secondary" data-toggle-table="'+t.id+'">'+(t.is_active?"غیرفعال":"فعال")+'</button><button class="btn danger" data-delete-table="'+t.id+'">حذف</button></div></article>').join("")||'<p>هنوز میزی تعریف نشده است.</p>'}
 async function loadOrders(){
  orders=await must(await client.from("orders").select("*,cafe_tables(name),order_items(*)").order("created_at",{ascending:false}).limit(500));
- const visibleOrders=orders.filter(o=>o.status!=="settled");
+ const visibleOrders=orders.filter(o=>!["settled","cancelled"].includes(o.status));
  const labels={pending:"در انتظار پذیرش",accepted:"پذیرفته‌شده",preparing:"در حال آماده‌سازی",ready:"آماده",served:"تحویل‌شده",settled:"تسویه‌شده",cancelled:"لغوشده"};
  const fmt=n=>new Intl.NumberFormat("fa-IR").format(Math.max(0,Math.round(Number(n)||0)));
  const duration=ms=>{const mins=Math.max(0,Math.floor(ms/60000));if(mins<60)return fmt(mins)+" دقیقه";return fmt(Math.floor(mins/60))+" ساعت و "+fmt(mins%60)+" دقیقه"};
