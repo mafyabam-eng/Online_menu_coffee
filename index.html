@@ -93,6 +93,10 @@
 button:disabled,[data-bamland-busy="true"]{opacity:.62;cursor:wait!important;filter:saturate(.72)}
 
 
+
+/* خوانایی بهتر منوی مشتری */
+.product h4{font-size:17px;line-height:1.65;font-weight:700}.price{font-size:14px}.description{font-size:13px;line-height:2;min-height:46px}.serve{font-size:12px}.add{width:auto;min-width:132px;height:42px;padding:0 15px;border-radius:13px;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-size:13px;font-weight:700;background:linear-gradient(135deg,var(--gold2),var(--gold));color:#173323;border:1px solid rgba(240,217,158,.75);box-shadow:0 5px 16px rgba(216,179,106,.16)}.add:before{content:"＋";font-size:17px;line-height:1}.add:hover{transform:translateY(-2px);background:var(--gold2);color:#10271b}
+#memory-game-status{font-size:14px!important;line-height:2!important;font-weight:600}#memory-game-timer{font-size:15px;font-weight:800;color:var(--gold2);margin:0 0 8px}#memory-game-timer.urgent{color:#ff9b83;animation:memoryPulse .65s infinite alternate}@keyframes memoryPulse{to{opacity:.55;transform:scale(1.03)}}
 </style>
 </head>
 <body>\n<section class="welcome-screen" id="welcome-screen" aria-label="خوش آمدید">
@@ -188,7 +192,7 @@ button:disabled,[data-bamland-busy="true"]{opacity:.62;cursor:wait!important;fil
 <div class="overlay" id="order-overlay" role="dialog" aria-modal="true" aria-labelledby="order-title">
   <section class="sheet" style="max-height:92vh;overflow-y:auto"><div class="sheet-head"><h3 id="order-title">پیگیری سفارش شما</h3><span class="pill">باملند</span></div>
   <div id="order-summary"></div>
-  <section class="notice" style="margin-top:14px"><h4 style="margin:0 0 8px">🃏 بازی پیدا کردن کارت‌های مشابه</h4><p id="memory-game-status" style="font-size:12px;margin:0 0 10px;color:var(--muted)">دو کارت را باز کن و جفت‌های مشابه را پیدا کن.</p><div id="memory-game" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px"></div><button type="button" id="memory-game-reset" class="primary" style="margin-top:10px">بازی دوباره</button></section>
+  <section class="notice" style="margin-top:14px"><h4 style="margin:0 0 8px">🃏 بازی پیدا کردن کارت‌های مشابه</h4><p id="memory-game-status" style="font-size:12px;margin:0 0 10px;color:var(--muted)">دو کارت را باز کن و جفت‌های مشابه را پیدا کن.</p><p id="memory-game-timer" aria-live="polite">زمان مرحله: ۳۵ ثانیه</p><div id="memory-game" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px"></div><button type="button" id="memory-game-reset" class="primary" style="margin-top:10px">بازی دوباره</button></section>
   <section class="notice" style="margin-top:14px"><h4 style="margin:0 0 8px">💬 پیام ناشناس برای مدیریت</h4><p style="font-size:12px;color:var(--muted);margin:0 0 10px">نام و شماره تماس شما پرسیده نمی‌شود. نظرتان مستقیماً برای مدیریت ثبت می‌شود.</p><label for="feedback-rating" style="display:block;margin-bottom:6px">امتیاز شما (اختیاری)</label><select id="feedback-rating" style="width:100%;padding:10px;border-radius:10px;background:#123b2b;color:var(--cream);border:1px solid var(--line);margin-bottom:10px"><option value="">بدون امتیاز</option><option value="5">۵ — عالی</option><option value="4">۴ — خوب</option><option value="3">۳ — معمولی</option><option value="2">۲ — ضعیف</option><option value="1">۱ — خیلی ضعیف</option></select><label for="feedback-message" style="display:block;margin-bottom:6px">پیام شما</label><textarea id="feedback-message" maxlength="1200" rows="3" placeholder="پیشنهاد، انتقاد یا نظرتان را بنویسید…" style="width:100%;box-sizing:border-box;padding:11px;border-radius:10px;background:#123b2b;color:var(--cream);border:1px solid var(--line);resize:vertical"></textarea><button type="button" id="feedback-submit" class="primary" style="margin-top:10px">ارسال ناشناس برای مدیریت</button><p id="feedback-status" role="status" style="font-size:12px;color:var(--muted);margin:8px 0 0"></p></section>
   </section>
 </div>
@@ -476,15 +480,15 @@ function updateOrderCountdown(){
  node.textContent=formatRemaining(remainingWaitMs(currentCustomerOrder));
 }
 window.bamlandCountdownTimer=setInterval(updateOrderCountdown,1000);
-let memoryDeck=[],memoryOpen=[],memoryMatched=[],memoryMoves=0,memoryLocked=false,memoryLevel=1,memorySymbols=[];
+let memoryDeck=[],memoryOpen=[],memoryMatched=[],memoryMoves=0,memoryLocked=false,memoryLevel=1,memorySymbols=[],memoryDeadline=0,memoryStageSeconds=35,memoryGameOver=false;
 const memorySymbolPool=["☕","🌿","🧋","🍰","🍪","🪴","🍓","🥐","🍵","🍫","🍋","🧁","🍉","🥝","🍇","🥥","🍯","🫖","🍬","🍩"];
-function shuffleCards(){const pairs=Math.min(10,3+memoryLevel);memorySymbols=memorySymbolPool.slice(0,pairs);memoryDeck=[...memorySymbols,...memorySymbols].sort(()=>Math.random()-.5);memoryOpen=[];memoryMatched=[];memoryMoves=0;memoryLocked=false;renderMemoryGame()}
+function shuffleCards(){const pairs=Math.min(10,3+memoryLevel);memorySymbols=memorySymbolPool.slice(0,pairs);memoryDeck=[...memorySymbols,...memorySymbols].sort(()=>Math.random()-.5);memoryOpen=[];memoryMatched=[];memoryMoves=0;memoryLocked=false;memoryGameOver=false;memoryStageSeconds=Math.max(18,35-(memoryLevel-1)*2);memoryDeadline=Date.now()+memoryStageSeconds*1000;renderMemoryGame()}
 function renderMemoryGame(){
  const cols=memoryDeck.length<=8?4:memoryDeck.length<=12?4:5;$("#memory-game").style.gridTemplateColumns="repeat("+cols+",minmax(0,1fr))";
  $("#memory-game").innerHTML=memoryDeck.map((symbol,i)=>'<button type="button" data-memory-card="'+i+'" aria-label="کارت '+(memoryMatched.includes(i)||memoryOpen.includes(i)?symbol:"بسته")+'" style="min-height:52px;border:1px solid var(--line);border-radius:12px;background:'+(memoryMatched.includes(i)?"#285b43":"#123b2b")+';color:var(--cream);font-size:23px">'+(memoryMatched.includes(i)||memoryOpen.includes(i)?symbol:"✦")+'</button>').join("");
  const pairs=memorySymbols.length,done=memoryMatched.length===memoryDeck.length;
- $("#memory-game-status").textContent=done?"آفرین! مرحله "+new Intl.NumberFormat("fa-IR").format(memoryLevel)+" را کامل کردی. برای رفتن به مرحله بعد دکمه زیر را بزن.":"مرحله "+new Intl.NumberFormat("fa-IR").format(memoryLevel)+" · حرکت‌ها: "+new Intl.NumberFormat("fa-IR").format(memoryMoves)+" · جفت‌ها: "+new Intl.NumberFormat("fa-IR").format(memoryMatched.length/2)+" از "+new Intl.NumberFormat("fa-IR").format(pairs);
- $("#memory-game-reset").textContent=done?"مرحله بعد ← "+new Intl.NumberFormat("fa-IR").format(Math.min(10,3+memoryLevel+1)*2)+" کارت":"شروع دوباره مرحله";
+ if(done)memoryDeadline=0;$("#memory-game-status").textContent=memoryGameOver?"زمان تمام شد! بازی از مرحلهٔ اول شروع می‌شود.":done?"آفرین! مرحله "+new Intl.NumberFormat("fa-IR").format(memoryLevel)+" را کامل کردی. برای رفتن به مرحله بعد دکمه زیر را بزن.":"مرحله "+new Intl.NumberFormat("fa-IR").format(memoryLevel)+" · حرکت‌ها: "+new Intl.NumberFormat("fa-IR").format(memoryMoves)+" · جفت‌ها: "+new Intl.NumberFormat("fa-IR").format(memoryMatched.length/2)+" از "+new Intl.NumberFormat("fa-IR").format(pairs);
+ $("#memory-game-reset").textContent=memoryGameOver?"شروع دوباره از مرحلهٔ اول":done?"مرحله بعد ← "+new Intl.NumberFormat("fa-IR").format(Math.min(10,3+memoryLevel+1)*2)+" کارت":"شروع دوباره مرحله";
 }
 $("#memory-game").addEventListener("click",e=>{
  const button=e.target.closest("[data-memory-card]");if(!button||memoryLocked)return;
@@ -492,7 +496,7 @@ $("#memory-game").addEventListener("click",e=>{
  memoryOpen.push(i);renderMemoryGame();
  if(memoryOpen.length===2){memoryMoves++;const [a,b]=memoryOpen;if(memoryDeck[a]===memoryDeck[b]){memoryMatched.push(a,b);memoryOpen=[];renderMemoryGame()}else{memoryLocked=true;setTimeout(()=>{memoryOpen=[];memoryLocked=false;renderMemoryGame()},700)}}
 });
-$("#memory-game-reset").addEventListener("click",()=>{if(memoryMatched.length===memoryDeck.length)memoryLevel++;shuffleCards()});shuffleCards();
+$("#memory-game-reset").addEventListener("click",()=>{if(memoryGameOver)memoryLevel=1;else if(memoryMatched.length===memoryDeck.length)memoryLevel++;shuffleCards()});setInterval(()=>{if(!memoryDeadline||memoryGameOver)return;const left=Math.max(0,Math.ceil((memoryDeadline-Date.now())/1000));const timer=$("#memory-game-timer");timer.textContent="زمان باقی‌مانده: "+new Intl.NumberFormat("fa-IR").format(left)+" ثانیه";timer.classList.toggle("urgent",left<=8);if(left===0){memoryGameOver=true;memoryDeadline=0;memoryLevel=1;memoryOpen=[];memoryMatched=[];memoryLocked=true;renderMemoryGame()}},250);shuffleCards();
 function lockFeedbackForm(orderId,message){
  const button=$("#feedback-submit");
  button.disabled=true;$("#feedback-message").disabled=true;$("#feedback-rating").disabled=true;
