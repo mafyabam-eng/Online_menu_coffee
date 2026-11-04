@@ -555,6 +555,15 @@ function startOrderPolling(qrToken,sessionToken){
     $("#order-summary").insertAdjacentHTML("beforeend",'<button class="primary" id="start-new-order" style="margin-top:12px">بازگشت به منو و سفارش جدید</button>');
     $("#start-new-order").addEventListener("click",()=>{ $("#order-overlay").classList.remove("open");document.body.style.overflow="";loadAvailableTables(); });
    }
+   if(!data.active&&!data.order){
+    clearInterval(window.bamlandOrderPoll);window.bamlandOrderPoll=null;
+    localStorage.removeItem("bamland-session:"+qrToken);
+    if(saved?.qr_token===qrToken)localStorage.removeItem("bamland-active-order");
+    currentCustomerOrder=null;
+    $("#order-title").textContent="سفارش دیگر فعال نیست";
+    $("#order-summary").innerHTML='<div class="notice">این سفارش از طرف کافه بسته یا حذف شده است. می‌توانید به منو برگردید و سفارش تازه‌ای ثبت کنید.</div><button class="primary" id="start-new-order" style="margin-top:12px">بازگشت به منو و سفارش جدید</button>';
+    $("#start-new-order").addEventListener("click",()=>{ $("#order-overlay").classList.remove("open");document.body.style.overflow="";loadAvailableTables(); });
+   }
   }catch(e){console.warn("Order status refresh failed",e)}
  },12000);
 }
