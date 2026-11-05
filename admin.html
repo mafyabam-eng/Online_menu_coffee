@@ -231,12 +231,12 @@ $("#tables-list").addEventListener("click",async e=>{const b=e.target.closest("b
 $("#settings-form").addEventListener("submit",async e=>{e.preventDefault();const button=e.currentTarget.querySelector("button[type=submit]");if(button.disabled)return;const welcomeMessage=$("#welcome-message").value.trim(),discount=Number($("#discount").value);if(!welcomeMessage||!Number.isFinite(discount)||discount<0||discount>100){toast("پیام خوش‌آمدگویی و درصد تخفیف را بررسی کنید.");return}button.disabled=true;const oldLabel=button.textContent;button.textContent="در حال ذخیره…";try{const saved=await must(await client.from("cafe_settings").update({welcome_message:welcomeMessage,menu_discount_percent:discount,updated_at:new Date().toISOString()}).eq("id",true).select("welcome_message,menu_discount_percent").single());settings={...settings,...saved};toast("تنظیمات با موفقیت ذخیره شد.");}catch(error){toast("ذخیره تنظیمات انجام نشد: "+errText(error))}finally{button.disabled=false;button.textContent=oldLabel}});
 $("#disable-discount").addEventListener("click",async()=>{const button=$("#disable-discount");if(button.disabled)return;button.disabled=true;const oldLabel=button.textContent;button.textContent="در حال غیرفعال‌سازی…";try{const saved=await must(await client.from("cafe_settings").update({menu_discount_percent:0,updated_at:new Date().toISOString()}).eq("id",true).select("menu_discount_percent").single());settings={...settings,...saved};$("#discount").value=0;toast("تخفیف کل منو غیرفعال شد.")}catch(error){toast("غیرفعال‌سازی تخفیف انجام نشد: "+errText(error))}finally{button.disabled=false;button.textContent=oldLabel}});
 async function adjustAllMenuPrices(direction){
- const form=$("#price-adjust-form"),button=form.querySelector('[data-price-direction="'+direction+'"]'),percent=Number($("#price-adjust-percent").value);
+ const form=$("#price-adjust-form"),button=form.querySelector('[data-price-direction="'+direction+'"]'),percent=Number($("#price-adjust-percent").value),formatNum=n=>new Intl.NumberFormat("fa-IR",{maximumFractionDigits:1}).format(Number(n)||0);
  if(!button||!["increase","decrease"].includes(direction))return;
  if(!Number.isFinite(percent)||percent<=0||percent>100){toast("درصد تغییر باید بیشتر از صفر و حداکثر ۱۰۰ باشد.");return}
  if(button.disabled)return;
  const action=direction==="increase"?"افزایش":"کاهش";
- const confirmation="آیا مطمئن هستید قیمت تمام محصولات منو (فعال و غیرفعال) به میزان "+fmt(percent)+"٪ "+action+" پیدا کند؟ این تغییر روی قیمت فعلی اعمال می‌شود و بازگردانی خودکار ندارد.";
+ const confirmation="آیا مطمئن هستید قیمت تمام محصولات منو (فعال و غیرفعال) به میزان "+formatNum(percent)+"٪ "+action+" پیدا کند؟ این تغییر روی قیمت فعلی اعمال می‌شود و بازگردانی خودکار ندارد.";
  if(!confirm(confirmation))return;
  const buttons=[...form.querySelectorAll("[data-price-direction]")],oldLabels=buttons.map(x=>x.textContent);
  buttons.forEach(x=>x.disabled=true);button.textContent="در حال اعمال "+action+"…";
@@ -245,13 +245,13 @@ async function adjustAllMenuPrices(direction){
   const count=Number(result?.updated_count);
   if(!Number.isInteger(count)||count<=0)throw new Error("هیچ محصولی به‌روزرسانی نشد؛ نتیجه عملیات از پایگاه داده تأیید نشد.");
   await refreshAfterSave(loadItems);updateStats();
-  toast(action+" "+fmt(percent)+"٪ قیمت با موفقیت روی "+fmt(count)+" محصول اعمال شد.");
+  toast(action+" "+formatNum(percent)+"٪ قیمت با موفقیت روی "+formatNum(count)+" محصول اعمال شد.");
  }catch(error){toast("عملیات "+action+" قیمت ناموفق بود: "+errText(error))}
  finally{buttons.forEach((x,index)=>{x.disabled=false;x.textContent=oldLabels[index]})}
 }
-$("#price-adjust-form").addEventListener("submit",e=>{e.preventDefault();adjustAllMenuPrices("increase")});
+$("#price-adjust-form").addEventListener("submit",e=>{e.preventDefault();return adjustAllMenuPrices("increase")});
 $("#price-adjust-form [data-price-direction='increase']").addEventListener("click",e=>{e.preventDefault();adjustAllMenuPrices("increase")});
-$("#price-adjust-form [data-price-direction='decrease']").addEventListener("click",e=>{e.preventDefault();adjustAllMenuPrices("decrease")});
+$("#price-adjust-form [data-price-direction='decrease']").addEventListener("click",e=>{e.preventDefault();return adjustAllMenuPrices("decrease")});
 async function releaseTableIfNoActiveOrders(tableId){
  if(!tableId)return;
  const active=await must(await client.from("orders").select("id").eq("table_id",tableId).not("status","in","(settled,cancelled)").limit(1));
