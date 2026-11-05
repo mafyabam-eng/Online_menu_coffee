@@ -116,7 +116,7 @@ button:disabled,[data-bamland-busy="true"]{opacity:.62;cursor:wait!important;fil
       <div class="welcome-brand-caption"><i>✦</i> COFFEE · PLANTS · MOMENTS <i>✦</i></div>
       <div class="welcome-brand-persian">بــاملند <span>·</span> کافه‌ای برای مکث‌های دلنشین</div>
     </div>
-    <h1 class="welcome-title" id="welcome-title">لحظه‌ات را خوش‌طعم کن</h1>
+    <h1 class="welcome-title" id="welcome-title">به بام‌لند خوش آمدید</h1>
     <p class="welcome-copy">قهوه، آرامش و حال خوب؛ فقط چند ثانیه تا دنیای باملند</p>
     <div class="welcome-progress"><span></span></div>
   </div>
@@ -358,7 +358,9 @@ async function loadLiveMenu(){
    supabaseGet("cafe_settings?select=welcome_message,menu_discount_percent&id=eq.true")
   ]);
   menuDiscountPercent=Number(settingsRows?.[0]?.menu_discount_percent||0);
-  // Keep a single canonical welcome title; do not duplicate/replace it with the DB welcome message.
+  const welcomeMessage=String(settingsRows?.[0]?.welcome_message||"به بام‌لند خوش آمدید").trim();
+  const welcomeTitle=document.getElementById("welcome-title");
+  if(welcomeTitle&&welcomeMessage)welcomeTitle.textContent=welcomeMessage;
   if(!categoryRows.length||!itemRows.length)return;
   const mapped=categoryRows.map(row=>{
    const catItems=itemRows.filter(item=>item.category_id===row.id).map(item=>{
