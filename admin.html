@@ -249,8 +249,7 @@ async function adjustAllMenuPrices(direction){
  }catch(error){toast("عملیات "+action+" قیمت ناموفق بود: "+errText(error))}
  finally{buttons.forEach((x,index)=>{x.disabled=false;x.textContent=oldLabels[index]})}
 }
-$("#price-adjust-form").addEventListener("submit",e=>{e.preventDefault();return adjustAllMenuPrices("increase")});
-$("#price-adjust-form [data-price-direction='increase']").addEventListener("click",e=>{e.preventDefault();adjustAllMenuPrices("increase")});
+$("#price-adjust-form [data-price-direction='increase']").addEventListener("click",e=>{e.preventDefault();return adjustAllMenuPrices("increase")});
 $("#price-adjust-form [data-price-direction='decrease']").addEventListener("click",e=>{e.preventDefault();return adjustAllMenuPrices("decrease")});
 async function releaseTableIfNoActiveOrders(tableId){
  if(!tableId)return;
