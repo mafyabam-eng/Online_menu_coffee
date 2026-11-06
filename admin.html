@@ -373,6 +373,7 @@ $("#analytics-form").addEventListener("submit",e=>{e.preventDefault();loadAnalyt
 function buildAnalyticsPrintReport(report){
  if(!report)throw new Error("ابتدا بازه گزارش را محاسبه کنید.");
  const fmt=n=>new Intl.NumberFormat("fa-IR").format(Math.round(Number(n||0)));
+ const faDate=value=>String(value).replace(/[0-9]/g,d=>"۰۱۲۳۴۵۶۷۸۹"[Number(d)]);
  const rows=report.items.map((item,index)=>'<tr><td>'+fmt(index+1)+'</td><td>'+esc(item.name)+'</td><td>'+fmt(item.qty)+'</td><td>'+fmt(item.revenue)+' تومان</td></tr>').join("");
  const expenses=report.expenses.map((expense,index)=>'<tr><td>'+fmt(index+1)+'</td><td>'+esc(expense.title||"هزینه")+'</td><td>'+esc(prettyJalali(expense.expense_date+"T12:00:00Z"))+'</td><td>'+esc(expense.details||"—")+'</td><td>'+fmt(expense.amount)+' تومان</td></tr>').join("");
  const reportDate=new Intl.DateTimeFormat("fa-IR",{dateStyle:"full",timeZone:"Asia/Tehran"}).format(new Date());
