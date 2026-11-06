@@ -16,7 +16,30 @@ button:disabled,[data-bamland-busy="true"]{opacity:.62;cursor:wait!important;fil
 
 /* افزایش اندازه و خوانایی پنل مدیریت */
 .item strong{font-size:15px}.item small{font-size:13px;line-height:1.9}.status{font-size:12px}.order-heading strong{font-size:16px!important}.order-total{font-size:14px}.order-items{font-size:15px!important;line-height:2!important}.order-details{font-size:12px!important}.order-note{font-size:13px!important}.order-metric{font-size:12px}.order-metric b{font-size:13px}.order-actions select,.order-actions .btn{font-size:13px;min-height:38px}.order-card{padding:14px 16px}.report-row strong{font-size:15px}.report-row small{font-size:13px}
-.manual-order-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.manual-cart-row{display:flex;align-items:center;justify-content:flex-start;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}.manual-cart-row .grow{min-width:0;flex:0 1 auto}.manual-cart-row small{display:block;color:var(--muted);margin-top:4px}.manual-qty{display:flex;align-items:center;gap:7px;flex-shrink:0;margin-inline-start:12px}.manual-qty button{width:30px;height:30px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--gold);font-weight:700}.manual-qty button[data-manual-remove]{width:auto;min-width:58px;height:38px;padding:0 14px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;line-height:1;flex:0 0 auto}.manual-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}.manual-summary>div{padding:12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}.manual-summary small{display:block;color:var(--muted);font-size:11px}.manual-summary strong{display:block;margin-top:5px;color:var(--gold2);font-size:14px}@media(max-width:640px){.manual-order-grid,.manual-summary{grid-template-columns:1fr}.manual-cart-row{align-items:flex-start;flex-direction:column}.manual-qty{align-self:flex-end}}\n.data-health-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}.data-health-stat{padding:14px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.025)}.data-health-stat small{display:block;color:var(--muted);font-size:11px}.data-health-stat strong{display:block;color:var(--gold);font-size:21px;margin-top:6px}.data-health-table{width:100%;border-collapse:collapse;font-size:12px}.data-health-table th,.data-health-table td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:right}.data-health-table th{color:var(--gold);font-weight:700}.it-warning{border:1px solid rgba(240,142,130,.48);background:rgba(240,142,130,.09);border-radius:13px;padding:14px;color:var(--cream);line-height:2;font-size:13px}.it-warning strong{color:#ffb0a6}@media(max-width:620px){.data-health-grid{grid-template-columns:1fr}.data-health-table{font-size:10px}.data-health-table th,.data-health-table td{padding:8px 4px}}\n</style>
+.manual-order-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.manual-cart-row{display:flex;align-items:center;justify-content:flex-start;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}.manual-cart-row .grow{min-width:0;flex:0 1 auto}.manual-cart-row small{display:block;color:var(--muted);margin-top:4px}.manual-qty{display:flex;align-items:center;gap:7px;flex-shrink:0;margin-inline-start:12px}.manual-qty button{width:30px;height:30px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--gold);font-weight:700}.manual-qty button[data-manual-remove]{width:auto;min-width:58px;height:38px;padding:0 14px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;line-height:1;flex:0 0 auto}.manual-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}.manual-summary>div{padding:12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}.manual-summary small{display:block;color:var(--muted);font-size:11px}.manual-summary strong{display:block;margin-top:5px;color:var(--gold2);font-size:14px}@media(max-width:640px){.manual-order-grid,.manual-summary{grid-template-columns:1fr}.manual-cart-row{align-items:flex-start;flex-direction:column}.manual-qty{align-self:flex-end}}\n.data-health-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}.data-health-stat{padding:14px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.025)}.data-health-stat small{display:block;color:var(--muted);font-size:11px}.data-health-stat strong{display:block;color:var(--gold);font-size:21px;margin-top:6px}.data-health-table{width:100%;border-collapse:collapse;font-size:12px}.data-health-table th,.data-health-table td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:right}.data-health-table th{color:var(--gold);font-weight:700}.it-warning{border:1px solid rgba(240,142,130,.48);background:rgba(240,142,130,.09);border-radius:13px;padding:14px;color:var(--cream);line-height:2;font-size:13px}.it-warning strong{color:#ffb0a6}@media(max-width:620px){.data-health-grid{grid-template-columns:1fr}.data-health-table{font-size:10px}.data-health-table th,.data-health-table td{padding:8px 4px}}\n
+/* Printable financial report */
+@media print{
+ @page{size:A4;margin:14mm 12mm}
+ body{background:#fff!important;color:#17251d!important;font-family:BadrLocal,Vazirmatn,sans-serif!important}
+ body *{visibility:hidden!important}
+ #analytics-print-report,#analytics-print-report *{visibility:visible!important}
+ #analytics-print-report{display:block!important;position:absolute;inset:0 auto auto 0;width:100%;color:#17251d!important;background:#fff!important}
+ #analytics-print-report .print-title{text-align:center;border-bottom:2px solid #1d5038;padding-bottom:12px;margin-bottom:14px}
+ #analytics-print-report h1{font-size:19px;color:#174b34;margin:0 0 7px}
+ #analytics-print-report p{color:#39483f;font-size:11px;margin:4px 0}
+ #analytics-print-report table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px}
+ #analytics-print-report th,#analytics-print-report td{border:1px solid #84958a;padding:7px 6px;text-align:right;vertical-align:top;overflow-wrap:anywhere}
+ #analytics-print-report thead{display:table-header-group}
+ #analytics-print-report tr{break-inside:avoid;page-break-inside:avoid}
+ #analytics-print-report th{background:#eaf0eb!important;color:#173e2c!important}
+ #analytics-print-report .print-totals{margin-top:16px;border:1px solid #84958a;padding:12px;break-inside:avoid}
+ #analytics-print-report .print-totals p{display:flex;justify-content:space-between;gap:12px;font-size:12px;padding:4px 0}
+ #analytics-print-report .print-grand{font-weight:800;border-top:2px solid #1d5038;margin-top:7px;padding-top:9px!important}
+ #analytics-print-report .print-footer{margin-top:14px;text-align:center;font-size:9px;color:#59675e}
+}
+#analytics-print-report{display:none}
+
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -73,6 +96,18 @@ button:disabled,[data-bamland-busy="true"]{opacity:.62;cursor:wait!important;fil
  <div class="actions" style="justify-content:space-between;align-items:center;flex-wrap:wrap"><h2>مدیریت اطلاعات و سرور</h2><button class="btn secondary" id="refresh-data-health" type="button">به‌روزرسانی وضعیت</button></div>
  <p>نمای کلی و فقط‌خواندنی از حجم دیتابیس، اندازه جداول و تعداد اطلاعات ثبت‌شده. این گزارش در هر بار ورود به این بخش از Supabase دریافت می‌شود.</p>
  <div class="it-warning" role="alert"><strong>توصیه مهم مسئولیت فناوری اطلاعات</strong><br>بدون هماهنگی و تأیید مسئول IT، در این بخش هیچ‌گونه تغییر، حذف، پاک‌سازی، انتقال یا اصلاح ساختار اطلاعات و تنظیمات سرور انجام ندهید. هرگونه اقدام عملیاتی باید پس از بررسی اثرات، تهیه نسخه پشتیبان معتبر و تأیید مسئول IT انجام شود.</div>
+ <div class="card" style="margin-top:14px;border-color:rgba(216,179,106,.45)">
+  <h3>تقویم سرویس و پاک‌سازی دوره‌ای سه‌ماهه</h3>
+  <p>اطلاعات عملیاتی هر دوره تا زمان سرویس روی سرور باقی می‌ماند. مدیر می‌تواند در هر زمان گزارش روزانه، هفتگی یا هر بازه دلخواه را دریافت کند؛ پایان سه ماه به‌تنهایی باعث حذف اطلاعات نمی‌شود.</p>
+  <ol style="line-height:2.1;color:var(--muted);padding-right:22px">
+   <li>در زمان سرویس، مسئول IT بازه سه‌ماهه موردنظر را مشخص و خروجی کامل گزارش‌ها و اطلاعات لازم را تهیه می‌کند.</li>
+   <li>مدیر فایل‌ها، بازه تاریخ، جمع فروش، مخارج و تعداد رکوردها را بررسی و صحت آرشیو را تأیید می‌کند.</li>
+   <li>مسئول IT وجود نسخه پشتیبان مستقل و قابل بازیابی و تکمیل آرشیو را بررسی و تأیید می‌کند.</li>
+   <li>فقط پس از ثبت هر دو تأیید و اطمینان از مجاز بودن نگهداری/حذف سوابق مالی، اطلاعات عملیاتی همان بازه پاک‌سازی می‌شود.</li>
+  </ol>
+  <div class="it-warning"><strong>قفل ایمنی پاک‌سازی:</strong> حذف خودکار وجود ندارد. تا زمان تکمیل خروجی، بررسی مدیر، تأیید مسئول IT و تعیین تکلیف الزامات قانونی حسابداری، هیچ اطلاعاتی حذف نمی‌شود. اطلاعات دوره‌های بعدی نباید تحت تأثیر قرار گیرند.</div>
+  <p style="margin-bottom:0">این بخش در حال حاضر دستورالعمل و ضابطه سرویس را نمایش می‌دهد؛ اجرای حذف از این صفحه فعال نشده است و برای جلوگیری از حذف ناخواسته، نیازمند طراحی و تأیید گردش‌کار امن جداگانه است.</p>
+ </div>
  <div id="data-health-state" class="notice" style="margin-top:14px">برای مشاهده وضعیت، روی «به‌روزرسانی وضعیت» بزنید.</div>
  <div id="data-health-content" class="hidden">
   <div class="data-health-grid">
@@ -89,7 +124,7 @@ button:disabled,[data-bamland-busy="true"]{opacity:.62;cursor:wait!important;fil
   <p class="notice">این صفحه حجم واقعی دیتابیس PostgreSQL و جداول عمومی را نمایش می‌دهد. سهمیه کل پلن، فضای باقی‌مانده Storage و محدودیت‌های صورتحساب از این گزارش قابل استنتاج نیست و باید جداگانه از داشبورد Supabase بررسی شود. هیچ داده‌ای از این صفحه حذف یا تغییر داده نمی‌شود.</p>
  </div>
 </section>
-<section id="accounting-view" class="view card"><h2>حسابداری و ثبت مخارج</h2><p class="notice">مخارج ثبت‌شده در گزارش‌های آنالیز و سود/زیان لحاظ می‌شوند. حذف مخارج برای مرحله تست فعال است.</p><form id="expense-form" class="fields"><label>تاریخ شمسی<input id="expense-date" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۲۶" required></label><label>عنوان هزینه<input id="expense-title" maxlength="160" placeholder="مثلاً تسویه قبض آب" required></label><label>مبلغ به تومان<input id="expense-amount" type="number" min="1" step="1" required></label><label class="wide">توضیحات (اختیاری)<textarea id="expense-details" maxlength="1000" placeholder="جزئیات هزینه، شماره قبض یا توضیحات تکمیلی"></textarea></label><div class="wide"><button class="btn" type="submit">ثبت هزینه</button></div></form><div class="line"></div><h3>مخارج ثبت‌شده</h3><div id="expenses-list" class="list"></div></section><section id="analytics-view" class="view card"><h2>آنالیز و آمار مالی</h2><p class="notice">گزارش بر اساس زمان ثبت سفارش در ساعت ایران (Asia/Tehran) محاسبه می‌شود. تعداد هر آیتم از سفارش‌های «تحویل‌شده» و «تسویه‌شده» جمع می‌شود؛ سفارش‌های لغوشده یا هنوز در جریان، جزو سرو شده‌ها نیستند.</p><div class="actions" style="margin:14px 0"><button type="button" class="btn secondary" id="analytics-today">گزارش امروز</button><button type="button" class="btn secondary" id="analytics-month">ماه جاری</button></div><form id="analytics-form" class="fields"><label>از تاریخ شمسی<input id="analytics-from" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۲۶" required></label><label>تا تاریخ شمسی<input id="analytics-to" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۲۶" required></label><div class="wide"><button class="btn" type="submit">محاسبه بازه</button></div></form><div class="line"></div><div id="analytics-summary" class="stats"></div><div id="analytics-financial-summary" class="stats" style="margin-top:10px"></div><h3>جزئیات سفارش‌های درآمدزا <small>(حذف دائمی سفارش)</small></h3><div id="analytics-orders" class="list"></div><h3>جزئیات هزینه‌ها</h3><div id="analytics-expenses" class="list"></div><h3>جمع هر آیتم در کل بازه</h3><div id="analytics-items" class="list"></div><h3>جزئیات روزانه هر آیتم</h3><div id="analytics-daily" class="list"></div><p id="analytics-note" class="notice hidden"></p></section><section id="reviews-view" class="view card"><h2>بازخورد مشتریان</h2><div id="reviews-list" class="list"></div></section>
+<section id="accounting-view" class="view card"><h2>حسابداری و ثبت مخارج</h2><p class="notice">مخارج ثبت‌شده در گزارش‌های آنالیز و سود/زیان لحاظ می‌شوند. حذف مخارج برای مرحله تست فعال است.</p><form id="expense-form" class="fields"><label>تاریخ شمسی<input id="expense-date" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۲۶" required></label><label>عنوان هزینه<input id="expense-title" maxlength="160" placeholder="مثلاً تسویه قبض آب" required></label><label>مبلغ به تومان<input id="expense-amount" type="number" min="1" step="1" required></label><label class="wide">توضیحات (اختیاری)<textarea id="expense-details" maxlength="1000" placeholder="جزئیات هزینه، شماره قبض یا توضیحات تکمیلی"></textarea></label><div class="wide"><button class="btn" type="submit">ثبت هزینه</button></div></form><div class="line"></div><h3>مخارج ثبت‌شده</h3><div id="expenses-list" class="list"></div></section><section id="analytics-view" class="view card"><h2>آنالیز و آمار مالی</h2><p class="notice">گزارش بر اساس زمان ثبت سفارش در ساعت ایران (Asia/Tehran) محاسبه می‌شود. تعداد هر آیتم از سفارش‌های «تحویل‌شده» و «تسویه‌شده» جمع می‌شود؛ سفارش‌های لغوشده یا هنوز در جریان، جزو سرو شده‌ها نیستند.</p><div class="actions" style="margin:14px 0"><button type="button" class="btn secondary" id="analytics-today">گزارش امروز</button><button type="button" class="btn secondary" id="analytics-month">ماه جاری</button></div><form id="analytics-form" class="fields"><label>از تاریخ شمسی<input id="analytics-from" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۲۶" required></label><label>تا تاریخ شمسی<input id="analytics-to" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۲۶" required></label><div class="wide"><button class="btn" type="submit">محاسبه بازه</button></div></form><div class="actions" style="margin:12px 0"><button type="button" class="btn" id="analytics-export-pdf">چاپ / دریافت PDF گزارش</button></div><div class="line"></div><div id="analytics-summary" class="stats"></div><div id="analytics-financial-summary" class="stats" style="margin-top:10px"></div><h3>جزئیات سفارش‌های درآمدزا <small>(حذف دائمی سفارش)</small></h3><div id="analytics-orders" class="list"></div><h3>جزئیات هزینه‌ها</h3><div id="analytics-expenses" class="list"></div><h3>جمع هر آیتم در کل بازه</h3><div id="analytics-items" class="list"></div><h3>جزئیات روزانه هر آیتم</h3><div id="analytics-daily" class="list"></div><p id="analytics-note" class="notice hidden"></p></section><section id="reviews-view" class="view card"><h2>بازخورد مشتریان</h2><div id="reviews-list" class="list"></div></section>
 </section>
 </div><div class="toast" id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -147,6 +182,7 @@ const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSI
 const ADMIN_EMAIL="CoffeeBamland@gmail.com";
 const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:true,detectSessionInUrl:false}});
 const $=s=>document.querySelector(s);let currentUser=null,categories=[],items=[],tables=[],orders=[],settings=null,manualCart=[];
+let lastAnalyticsReport=null;
 const esc=v=>String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");
 const money=n=>new Intl.NumberFormat("fa-IR").format(Number(n||0))+" تومان";
 function toast(s){const el=$("#toast");el.textContent=s;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),2800)}
@@ -315,12 +351,35 @@ async function loadAnalytics(preset="today"){
   $("#analytics-items").innerHTML=sortedTotals.map(t=>'<article class="item report-row"><div><strong>'+esc(t.name)+'</strong><small>جمع فروش آیتم در بازه انتخاب‌شده</small></div><div style="text-align:left"><strong class="report-number">'+fmt(t.qty)+' عدد</strong><small>'+fmt(t.revenue)+' تومان</small></div></article>').join("")||'<p>در این بازه سفارشی با وضعیت تحویل‌شده یا تسویه‌شده وجود ندارد.</p>';
   const sortedDaily=[...daily.values()].sort((a,b)=>{const pa=toEnglishDigits(a.day).replaceAll("/","");const pb=toEnglishDigits(b.day).replaceAll("/","");return pa.localeCompare(pb)||a.name.localeCompare(b.name,"fa")});
   $("#analytics-daily").innerHTML=sortedDaily.map(d=>'<article class="item report-row"><div><strong>'+esc(d.name)+'</strong><small>'+esc(d.day)+' · مبلغ '+fmt(d.revenue)+' تومان</small></div><strong class="report-number">'+fmt(d.qty)+' عدد</strong></article>').join("")||'<p>جزئیاتی برای نمایش وجود ندارد.</p>';
+  lastAnalyticsReport={from:jalaliString(from),to:jalaliString(to),orders:allOrders,expenses,items:sortedTotals,orderCount:orderIds.size,itemCount:grandQty,revenue:grandRevenue,expensesTotal:grandExpenses,net:grandRevenue-grandExpenses};
   note.textContent="بازه گزارش: "+jalaliString(from)+" تا "+jalaliString(to)+" (ساعت ایران).";note.classList.remove("hidden");
  }catch(error){note.textContent=errText(error);note.classList.remove("hidden");toast(errText(error))}
 }
 $("#analytics-today").addEventListener("click",()=>loadAnalytics("today"));
 $("#analytics-month").addEventListener("click",()=>loadAnalytics("month"));
 $("#analytics-form").addEventListener("submit",e=>{e.preventDefault();loadAnalytics("custom")});
+
+function buildAnalyticsPrintReport(report){
+ if(!report)throw new Error("ابتدا بازه گزارش را محاسبه کنید.");
+ const fmt=n=>new Intl.NumberFormat("fa-IR").format(Math.round(Number(n||0)));
+ const rows=report.items.map((item,index)=>'<tr><td style="width:8%">'+fmt(index+1)+'</td><td style="width:42%">'+esc(item.name)+'</td><td style="width:22%">'+fmt(item.qty)+'</td><td style="width:28%">'+fmt(item.revenue)+' تومان</td></tr>').join("");
+ const expenses=report.expenses.map((expense,index)=>'<tr><td>'+fmt(index+1)+'</td><td>'+esc(expense.title||"هزینه")+'</td><td>'+esc(prettyJalali(expense.expense_date+"T12:00:00Z"))+'</td><td>'+fmt(expense.amount)+' تومان</td></tr>').join("");
+ return '<div class="print-title"><h1>گزارش جمع‌بندی عملکرد کافه باملند</h1><p>بازه گزارش: از '+esc(report.from)+' تا '+esc(report.to)+' · تقویم شمسی · ساعت ایران</p><p>تاریخ تهیه گزارش: '+esc(new Intl.DateTimeFormat("fa-IR",{dateStyle:"full",timeZone:"Asia/Tehran"}).format(new Date()))+'</p></div>'+
+ '<h3>خلاصه فروش به تفکیک آیتم</h3><table><thead><tr><th>ردیف</th><th>نوع آیتم</th><th>تعداد فروش</th><th>جمع مبلغ آیتم</th></tr></thead><tbody>'+ (rows||'<tr><td colspan="4">در این بازه فروش ثبت‌شده‌ای وجود ندارد.</td></tr>')+'</tbody></table>'+
+ '<h3 style="margin-top:18px">ریز مخارج ثبت‌شده</h3><table><thead><tr><th>ردیف</th><th>شرح هزینه</th><th>تاریخ</th><th>مبلغ</th></tr></thead><tbody>'+ (expenses||'<tr><td colspan="4">هزینه‌ای ثبت نشده است.</td></tr>')+'</tbody></table>'+
+ '<div class="print-totals"><p><span>تعداد سفارش‌های تحویل‌شده / تسویه‌شده</span><strong>'+fmt(report.orderCount)+'</strong></p><p><span>جمع تعداد آیتم‌های فروخته‌شده</span><strong>'+fmt(report.itemCount)+'</strong></p><p><span>جمع کل مخارج</span><strong>'+fmt(report.expensesTotal)+' تومان</strong></p><p class="print-grand"><span>جمع کل فروش سفارش‌ها</span><strong>'+fmt(report.revenue)+' تومان</strong></p><p class="print-grand"><span>مانده پس از کسر مخارج ثبت‌شده</span><strong>'+fmt(report.net)+' تومان</strong></p></div>'+
+ '<div class="print-footer">گزارش سیستمی کافه باملند · این سند بر اساس اطلاعات ثبت‌شده در بازه انتخابی تهیه شده است.</div>';
+}
+$("#analytics-export-pdf").addEventListener("click",()=>{
+ try{
+  const report=buildAnalyticsPrintReport(lastAnalyticsReport);
+  let printRoot=$("#analytics-print-report");
+  if(!printRoot){printRoot=document.createElement("div");printRoot.id="analytics-print-report";document.body.appendChild(printRoot)}
+  printRoot.innerHTML=report;
+  window.print();
+ }catch(error){toast(errText(error))}
+});
+
 
 async function loadExpenses(){
  const data=await must(await client.from("cafe_expenses").select("*").order("expense_date",{ascending:false}).order("created_at",{ascending:false}).limit(500));
