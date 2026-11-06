@@ -16,7 +16,7 @@ button:disabled,[data-bamland-busy="true"]{opacity:.62;cursor:wait!important;fil
 
 /* افزایش اندازه و خوانایی پنل مدیریت */
 .item strong{font-size:15px}.item small{font-size:13px;line-height:1.9}.status{font-size:12px}.order-heading strong{font-size:16px!important}.order-total{font-size:14px}.order-items{font-size:15px!important;line-height:2!important}.order-details{font-size:12px!important}.order-note{font-size:13px!important}.order-metric{font-size:12px}.order-metric b{font-size:13px}.order-actions select,.order-actions .btn{font-size:13px;min-height:38px}.order-card{padding:14px 16px}.report-row strong{font-size:15px}.report-row small{font-size:13px}
-</style>
+.manual-order-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.manual-cart-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}.manual-cart-row .grow{min-width:0}.manual-cart-row small{display:block;color:var(--muted);margin-top:4px}.manual-qty{display:flex;align-items:center;gap:7px;flex-shrink:0}.manual-qty button{width:30px;height:30px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--gold);font-weight:700}.manual-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}.manual-summary>div{padding:12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}.manual-summary small{display:block;color:var(--muted);font-size:11px}.manual-summary strong{display:block;margin-top:5px;color:var(--gold2);font-size:14px}@media(max-width:640px){.manual-order-grid,.manual-summary{grid-template-columns:1fr}.manual-cart-row{align-items:flex-start;flex-direction:column}.manual-qty{align-self:flex-end}}\n</style>
 </head>
 <body>
 <div class="wrap">
@@ -34,9 +34,30 @@ button:disabled,[data-bamland-busy="true"]{opacity:.62;cursor:wait!important;fil
 <h1>مدیریت باملند</h1><p id="welcome-admin">خوش آمدید. تغییرات مستقیماً در پایگاه داده ذخیره می‌شوند.</p>
 <div class="stats"><div class="stat"><small>محصولات فعال</small><strong id="stat-items">—</strong></div><div class="stat"><small>میزهای فعال</small><strong id="stat-tables">—</strong></div><div class="stat"><small>سفارش‌های باز</small><strong id="stat-orders">—</strong></div></div>
 <nav class="tabs" id="tabs">
-<button class="active" data-view="orders-view">سفارش‌ها</button><button data-view="items-view">منو و محصولات</button><button data-view="categories-view">دسته‌بندی‌ها</button><button data-view="tables-view">میزها</button><button data-view="accounting-view">حسابداری</button><button data-view="analytics-view">آنالیز و آمار</button><button data-view="settings-view">تنظیمات</button><button data-view="reviews-view">نظرات</button>
+<button class="active" data-view="orders-view">سفارش‌ها</button><button data-view="manual-order-view">ثبت سفارش دستی</button><button data-view="items-view">منو و محصولات</button><button data-view="categories-view">دسته‌بندی‌ها</button><button data-view="tables-view">میزها</button><button data-view="accounting-view">حسابداری</button><button data-view="analytics-view">آنالیز و آمار</button><button data-view="settings-view">تنظیمات</button><button data-view="reviews-view">نظرات</button>
 </nav>
 <section id="orders-view" class="view active card"><div class="actions" style="justify-content:space-between;flex-wrap:wrap"><h2>سفارش‌ها</h2><div class="actions"><button class="btn secondary" id="enable-order-sound">فعال‌سازی صدای اعلان</button><button class="btn secondary" id="refresh-orders">به‌روزرسانی</button></div></div><p style="font-size:12px;color:var(--muted);margin:8px 0 12px">اگر سفارش جدید بیش از ۳ دقیقه در انتظار پذیرش بماند، هر ۱ دقیقه صدای یادآوری پخش می‌شود تا وضعیت آن تغییر کند.</p><div id="orders-list" class="list"></div></section>
+<section id="manual-order-view" class="view card">
+ <div class="actions" style="justify-content:space-between;flex-wrap:wrap"><h2>ثبت سفارش دستی</h2><span class="pill">بدون نیاز به اطلاعات مشتری</span></div>
+ <p style="margin:6px 0 16px">میز آزاد را انتخاب کن، محصولات را به سفارش اضافه کن و ثبت نهایی را بزن. سفارش در صف اصلی سفارش‌ها با وضعیت «در انتظار پذیرش» قرار می‌گیرد.</p>
+ <div class="manual-order-grid">
+  <label>انتخاب میز آزاد<select id="manual-table"><option value="">در حال دریافت میزهای آزاد…</option></select></label>
+  <label>دسته‌بندی محصول<select id="manual-category"><option value="">همه دسته‌بندی‌ها</option></select></label>
+  <label>انتخاب محصول<select id="manual-product"><option value="">ابتدا محصول را انتخاب کن</option></select></label>
+  <label>تعداد<input id="manual-quantity" type="number" min="1" max="20" step="1" value="1"></label>
+ </div>
+ <div class="actions" style="margin-top:12px"><button class="btn secondary" id="manual-add-item" type="button">افزودن به سفارش</button></div>
+ <div class="line"></div>
+ <h3>اقلام سفارش</h3>
+ <div id="manual-cart-list" class="list"><p>هنوز محصولی به سفارش اضافه نشده است.</p></div>
+ <div class="manual-summary">
+  <div><small>جمع جزء</small><strong id="manual-subtotal">۰ تومان</strong></div>
+  <div><small>تخفیف منو</small><strong id="manual-discount">۰ تومان</strong></div>
+  <div><small>مبلغ نهایی</small><strong id="manual-total">۰ تومان</strong></div>
+ </div>
+ <div class="actions" style="justify-content:flex-end"><button class="btn" id="manual-submit" type="button" disabled>ثبت سفارش دستی</button></div>
+ <p id="manual-order-help" style="font-size:11px;margin-bottom:0">اطلاعات مشتری دریافت نمی‌شود. قیمت و تخفیف نهایی در زمان ثبت، از دیتابیس محاسبه می‌شوند.</p>
+</section>
 <section id="items-view" class="view card"><h2 id="item-form-title">افزودن محصول</h2><form id="item-form" class="fields">
 <input type="hidden" id="item-id">
 <label>نام محصول<input id="item-name" required maxlength="120"></label><label>دسته‌بندی<select id="item-category" required></select></label>
@@ -105,7 +126,7 @@ const SUPABASE_URL="https://tyfklcdnxudkseatruwk.supabase.co";
 const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5ZmtsY2RueHVka3NlYXRydXdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5MTQ2NjMsImV4cCI6MjEwNzQ5MDY2M30.vw47pJyW0mVV7CJT36wPTved5If-ygiY1MhVrccueD8";
 const ADMIN_EMAIL="CoffeeBamland@gmail.com";
 const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:true,detectSessionInUrl:false}});
-const $=s=>document.querySelector(s);let currentUser=null,categories=[],items=[],tables=[],orders=[],settings=null;
+const $=s=>document.querySelector(s);let currentUser=null,categories=[],items=[],tables=[],orders=[],settings=null,manualCart=[];
 const esc=v=>String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");
 const money=n=>new Intl.NumberFormat("fa-IR").format(Number(n||0))+" تومان";
 function toast(s){const el=$("#toast");el.textContent=s;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),2800)}
@@ -114,11 +135,74 @@ async function must(result){if(result.error)throw result.error;return result.dat
 async function refreshAfterSave(loader,attempts=3){let lastError;for(let attempt=0;attempt<attempts;attempt++){try{return await loader()}catch(error){lastError=error;if(attempt<attempts-1)await new Promise(resolve=>setTimeout(resolve,350*(attempt+1)))}}throw lastError}
 $("#login-form").addEventListener("submit",async e=>{e.preventDefault();activateAdminOrderSound();const button=e.currentTarget.querySelector("button");$("#login-help").classList.add("hidden");$("#login-help").textContent="";button.disabled=true;button.textContent="در حال ورود…";try{const data=await must(await client.auth.signInWithPassword({email:$("#email").value.trim(),password:$("#password").value}));if((data.user.email||"").toLowerCase()!==ADMIN_EMAIL.toLowerCase()){await client.auth.signOut();throw new Error("این حساب اجازه ورود به پنل مدیریت را ندارد.")}currentUser=data.user;$("#login-view").classList.add("hidden");$("#admin-view").classList.remove("hidden");$("#logout").classList.remove("hidden");await loadAll();toast("ورود موفق بود")}catch(e){$("#login-help").textContent=errText(e);$("#login-help").classList.remove("hidden");toast(errText(e))}finally{button.disabled=false;button.textContent="ورود امن"}});
 $("#logout").addEventListener("click",async()=>{await client.auth.signOut();currentUser=null;$("#admin-view").classList.add("hidden");$("#login-view").classList.remove("hidden");$("#logout").classList.add("hidden")});
-$("#tabs").addEventListener("click",e=>{const b=e.target.closest("[data-view]");if(!b)return;document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".view").forEach(x=>x.classList.toggle("active",x.id===b.dataset.view));if(b.dataset.view==="analytics-view")loadAnalytics("today")});
-async function loadAll(){await Promise.all([loadCategories(),loadItems(),loadTables(),loadOrders(),loadSettings(),loadReviews(),loadExpenses()]);updateStats();$("#expense-date").value=jalaliString(todayJalali());await loadAnalytics("today")}
+$("#tabs").addEventListener("click",e=>{const b=e.target.closest("[data-view]");if(!b)return;document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".view").forEach(x=>x.classList.toggle("active",x.id===b.dataset.view));if(b.dataset.view==="analytics-view")loadAnalytics("today");if(b.dataset.view==="manual-order-view"){renderManualSelectors();loadTables().catch(error=>toast(errText(error)));renderManualCart()}});
+$("#manual-category").addEventListener("change",renderManualSelectors);
+$("#manual-table").addEventListener("change",renderManualCart);
+$("#manual-add-item").addEventListener("click",()=>{
+ const id=$("#manual-product").value,quantity=Number($("#manual-quantity").value),item=items.find(x=>x.id===id&&x.is_active);
+ if(!item){toast("ابتدا یک محصول معتبر انتخاب کن");return}
+ if(!Number.isInteger(quantity)||quantity<1||quantity>20){toast("تعداد باید بین ۱ تا ۲۰ باشد");return}
+ const existing=manualCart.find(x=>x.id===id),next=(existing?.quantity||0)+quantity;
+ if(next>20){toast("حداکثر تعداد هر محصول ۲۰ عدد است");return}
+ if(existing)existing.quantity=next;else manualCart.push({id:item.id,name:item.name,price:Number(item.price),serving_minutes:Number(item.serving_minutes||0),quantity});
+ $("#manual-quantity").value="1";renderManualCart();toast("محصول به سفارش اضافه شد");
+});
+$("#manual-cart-list").addEventListener("click",e=>{
+ const b=e.target.closest("[data-manual-inc],[data-manual-dec],[data-manual-remove]");if(!b)return;
+ const id=b.dataset.manualInc||b.dataset.manualDec||b.dataset.manualRemove,index=manualCart.findIndex(x=>x.id===id);if(index<0)return;
+ if(b.dataset.manualRemove!==undefined)manualCart.splice(index,1);
+ else if(b.dataset.manualInc!==undefined){if(manualCart[index].quantity>=20){toast("حداکثر تعداد هر محصول ۲۰ عدد است");return}manualCart[index].quantity++}
+ else{manualCart[index].quantity--;if(manualCart[index].quantity<1)manualCart.splice(index,1)}
+ renderManualCart();
+});
+$("#manual-submit").addEventListener("click",async()=>{
+ const button=$("#manual-submit"),tableId=$("#manual-table").value;
+ if(!tableId||!manualCart.length){toast("میز و حداقل یک محصول را انتخاب کن");return}
+ if(button.disabled)return;
+ button.disabled=true;const old=button.textContent;button.textContent="در حال ثبت سفارش…";
+ try{
+  await must(await client.rpc("create_manual_order",{p_table_id:tableId,p_items:manualCart.map(x=>({menu_item_id:x.id,quantity:x.quantity}))}));
+  manualCart=[];renderManualCart();await Promise.all([loadOrders(),loadTables()]);updateStats();
+  $("#tabs button[data-view='orders-view']").click();toast("سفارش دستی ثبت شد و به صف سفارش‌ها اضافه شد");
+ }catch(error){
+  const message=errText(error);
+  if(message.includes("table_unavailable"))toast("این میز دیگر آزاد نیست؛ یک میز دیگر انتخاب کن");
+  else if(message.includes("menu_item_unavailable"))toast("یکی از محصولات دیگر فعال نیست؛ فهرست محصولات را بررسی کن");
+  else toast("ثبت سفارش دستی ناموفق بود: "+message);
+  try{await loadTables()}catch(_){}
+ }finally{button.textContent=old;renderManualCart()}
+});
+
+async function loadAll(){await Promise.all([loadCategories(),loadItems(),loadTables(),loadOrders(),loadSettings(),loadReviews(),loadExpenses()]);renderManualSelectors();renderManualTableOptions();renderManualCart();updateStats();$("#expense-date").value=jalaliString(todayJalali());await loadAnalytics("today")}
 async function loadCategories(){categories=await must(await client.from("menu_categories").select("*").order("sort_order"));$("#item-category").innerHTML=categories.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name_fa||c.name)+'</option>').join("");$("#categories-list").innerHTML=categories.map(c=>'<article class="category-admin-card"><div class="category-admin-info"><strong>'+esc(c.name_fa||c.name)+' · '+esc(c.name)+'</strong><small>'+esc(c.subtitle||"بدون توضیح")+' <span class="meta-sep">·</span> ترتیب '+esc(c.sort_order)+' <span class="meta-sep">·</span> '+(c.is_active?"فعال":"غیرفعال")+'</small></div><div class="actions"><button class="btn secondary" data-cat-edit="'+c.id+'">ویرایش</button><button class="btn secondary" data-cat-toggle="'+c.id+'">'+(c.is_active?"غیرفعال‌کردن":"فعال‌کردن")+'</button><button class="btn danger" data-cat-delete="'+c.id+'">حذف</button></div></article>').join("")||'<p>دسته‌بندی‌ای وجود ندارد.</p>'}
 async function loadItems(){items=await must(await client.from("menu_items").select("*,menu_categories(name,name_fa)").order("sort_order"));$("#items-list").classList.add("product-admin-list");$("#items-list").innerHTML=items.map(it=>'<article class="product-admin-card">'+(it.image_url?'<img class="thumb" src="'+esc(it.image_url)+'" alt="">':'<div class="thumb" style="width:56px;height:56px;border-radius:11px;background:#163e2d;display:grid;place-items:center;color:#d8b36a">✦</div>')+'<div class="product-admin-info"><strong>'+esc(it.name)+' · '+money(it.price)+'</strong><small>'+esc(it.menu_categories?.name_fa||it.menu_categories?.name||"بدون دسته")+' · '+esc(it.serving_minutes)+' دقیقه · '+(it.is_active?"فعال":"غیرفعال")+'</small></div><div class="product-admin-actions"><button class="btn secondary" data-edit-item="'+it.id+'">ویرایش</button><button class="btn secondary" data-toggle-item="'+it.id+'">'+(it.is_active?"غیرفعال‌کردن":"فعال‌کردن")+'</button><button class="btn danger" data-delete-item="'+it.id+'">حذف</button></div></article>').join("")||'<p>محصولی وجود ندارد.</p>'}
-async function loadTables(){tables=await must(await client.from("cafe_tables").select("*").order("sort_order"));$("#tables-list").innerHTML=tables.map(t=>'<article class="item"><div class="grow"><strong>'+esc(t.name)+'</strong><small>'+(t.is_active?"فعال":"غیرفعال")+(t.is_available?" · آزاد":" · دارای سفارش فعال")+'</small></div><div class="actions"><button class="btn secondary" data-toggle-table="'+t.id+'">'+(t.is_active?"غیرفعال":"فعال")+'</button><button class="btn danger" data-delete-table="'+t.id+'">حذف</button></div></article>').join("")||'<p>هنوز میزی تعریف نشده است.</p>'}
+async function loadTables(){tables=await must(await client.from("cafe_tables").select("*").order("sort_order"));$("#tables-list").innerHTML=tables.map(t=>'<article class="item"><div class="grow"><strong>'+esc(t.name)+'</strong><small>'+(t.is_active?"فعال":"غیرفعال")+(t.is_available?" · آزاد":" · دارای سفارش فعال")+'</small></div><div class="actions"><button class="btn secondary" data-toggle-table="'+t.id+'">'+(t.is_active?"غیرفعال":"فعال")+'</button><button class="btn danger" data-delete-table="'+t.id+'">حذف</button></div></article>').join("")||'<p>هنوز میزی تعریف نشده است.</p>';renderManualTableOptions()}
+
+function renderManualTableOptions(){
+ const select=$("#manual-table");if(!select)return;
+ const previous=select.value,available=tables.filter(t=>t.is_active&&t.is_available);
+ select.innerHTML='<option value="">'+(available.length?"انتخاب میز آزاد…":"میز آزادی در دسترس نیست")+'</option>'+available.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+'</option>').join("");
+ if(available.some(t=>t.id===previous))select.value=previous;
+ select.disabled=!available.length;
+}
+function renderManualSelectors(){
+ const categorySelect=$("#manual-category"),productSelect=$("#manual-product");if(!categorySelect||!productSelect)return;
+ const previousCategory=categorySelect.value,activeCategories=categories.filter(x=>x.is_active);
+ categorySelect.innerHTML='<option value="">همه دسته‌بندی‌ها</option>'+activeCategories.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name_fa||x.name)+'</option>').join("");
+ if(activeCategories.some(x=>x.id===previousCategory))categorySelect.value=previousCategory;
+ const previousProduct=productSelect.value,categoryId=categorySelect.value;
+ const availableItems=items.filter(x=>x.is_active&&(!categoryId||x.category_id===categoryId));
+ productSelect.innerHTML='<option value="">انتخاب محصول…</option>'+availableItems.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+' · '+money(x.price)+'</option>').join("");
+ if(availableItems.some(x=>x.id===previousProduct))productSelect.value=previousProduct;
+}
+function renderManualCart(){
+ const list=$("#manual-cart-list");if(!list)return;
+ const subtotal=manualCart.reduce((sum,x)=>sum+x.price*x.quantity,0),percent=Number(settings?.menu_discount_percent||0),discount=Math.round(subtotal*percent/100),total=Math.max(0,subtotal-discount);
+ list.innerHTML=manualCart.map(x=>'<article class="manual-cart-row"><div class="grow"><strong>'+esc(x.name)+'</strong><small>'+money(x.price)+' · جمع: '+money(x.price*x.quantity)+'</small></div><div class="manual-qty"><button type="button" data-manual-dec="'+esc(x.id)+'" aria-label="کاهش تعداد">−</button><strong>'+new Intl.NumberFormat("fa-IR").format(x.quantity)+'</strong><button type="button" data-manual-inc="'+esc(x.id)+'" aria-label="افزایش تعداد">+</button><button type="button" class="btn danger" data-manual-remove="'+esc(x.id)+'">حذف</button></div></article>').join("")||'<p>هنوز محصولی به سفارش اضافه نشده است.</p>';
+ $("#manual-subtotal").textContent=money(subtotal);$("#manual-discount").textContent=money(discount);$("#manual-total").textContent=money(total);
+ $("#manual-submit").disabled=!manualCart.length||!$("#manual-table").value;
+}
+
 async function loadOrders(){
  orders=await must(await client.from("orders").select("*,cafe_tables(name),order_items(*)").order("created_at",{ascending:false}).limit(500));
  const visibleOrders=orders.filter(o=>!["settled","cancelled"].includes(o.status));
