@@ -332,6 +332,7 @@ function jalaliMonthStart(p){return {y:p.y,m:p.m,d:1}}
 function addJalaliDays(p,days){const d=parseJalaliInput(jalaliString(p));return jalaliParts(new Date(d.getTime()+days*86400000))}
 function startOfJalaliMonth(p){return jalaliYearStart(p.y).getTime()===0? p : {y:p.y,m:p.m,d:1}}
 async function loadAnalytics(preset="today"){
+ lastAnalyticsReport=null;$("#analytics-export-pdf").disabled=true;
  const note=$("#analytics-note");note.classList.add("hidden");$("#analytics-summary").innerHTML="";$("#analytics-financial-summary").innerHTML="";$("#analytics-items").innerHTML="";$("#analytics-daily").innerHTML="";$("#analytics-orders").innerHTML="";$("#analytics-expenses").innerHTML="";
  try{
   let from,to;const today=todayJalali();
@@ -359,7 +360,7 @@ async function loadAnalytics(preset="today"){
   $("#analytics-items").innerHTML=sortedTotals.map(t=>'<article class="item report-row"><div><strong>'+esc(t.name)+'</strong><small>جمع فروش آیتم در بازه انتخاب‌شده</small></div><div style="text-align:left"><strong class="report-number">'+fmt(t.qty)+' عدد</strong><small>'+fmt(t.revenue)+' تومان</small></div></article>').join("")||'<p>در این بازه سفارشی با وضعیت تحویل‌شده یا تسویه‌شده وجود ندارد.</p>';
   const sortedDaily=[...daily.values()].sort((a,b)=>{const pa=toEnglishDigits(a.day).replaceAll("/","");const pb=toEnglishDigits(b.day).replaceAll("/","");return pa.localeCompare(pb)||a.name.localeCompare(b.name,"fa")});
   $("#analytics-daily").innerHTML=sortedDaily.map(d=>'<article class="item report-row"><div><strong>'+esc(d.name)+'</strong><small>'+esc(d.day)+' · مبلغ '+fmt(d.revenue)+' تومان</small></div><strong class="report-number">'+fmt(d.qty)+' عدد</strong></article>').join("")||'<p>جزئیاتی برای نمایش وجود ندارد.</p>';
-  lastAnalyticsReport={from:jalaliString(from),to:jalaliString(to),orders:allOrders,expenses,items:sortedTotals,orderCount:orderIds.size,itemCount:grandQty,revenue:grandRevenue,expensesTotal:grandExpenses,net:grandRevenue-grandExpenses};
+  lastAnalyticsReport={from:jalaliString(from),to:jalaliString(to),orders:allOrders,expenses,items:sortedTotals,orderCount:orderIds.size,itemCount:grandQty,revenue:grandRevenue,expensesTotal:grandExpenses,net:grandRevenue-grandExpenses};$("#analytics-export-pdf").disabled=false;
   note.textContent="بازه گزارش: "+jalaliString(from)+" تا "+jalaliString(to)+" (ساعت ایران).";note.classList.remove("hidden");
  }catch(error){note.textContent=errText(error);note.classList.remove("hidden");toast(errText(error))}
 }
