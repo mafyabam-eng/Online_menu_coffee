@@ -24,18 +24,24 @@ button:disabled,[data-bamland-busy="true"]{opacity:.62;cursor:wait!important;fil
  body *{visibility:hidden!important}
  #analytics-print-report,#analytics-print-report *{visibility:visible!important}
  #analytics-print-report{display:block!important;position:absolute;inset:0 auto auto 0;width:100%;color:#17251d!important;background:#fff!important}
- #analytics-print-report .print-title{text-align:center;border-bottom:2px solid #1d5038;padding-bottom:12px;margin-bottom:14px}
- #analytics-print-report h1{font-size:19px;color:#174b34;margin:0 0 7px}
- #analytics-print-report p{color:#39483f;font-size:11px;margin:4px 0}
- #analytics-print-report table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px}
- #analytics-print-report th,#analytics-print-report td{border:1px solid #84958a;padding:7px 6px;text-align:right;vertical-align:top;overflow-wrap:anywhere}
+ #analytics-print-report{font-family:BadrLocal,Vazirmatn,sans-serif!important;font-size:11px;line-height:1.9;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+ #analytics-print-report .print-title{text-align:center;border-bottom:2px solid #1d5038;padding-bottom:12px;margin-bottom:16px}
+ #analytics-print-report .print-brand{font-size:11px;letter-spacing:2px;color:#52745f;font-weight:700}
+ #analytics-print-report h1{font-size:20px;color:#174b34;margin:3px 0 7px}
+ #analytics-print-report p{color:#39483f;font-size:10px;margin:4px 0}
+ #analytics-print-report .print-period{font-size:13px;font-weight:700;color:#173e2c}
+ #analytics-print-report .print-section-title{font-size:13px;color:#174b34;margin:18px 0 8px;break-after:avoid-page;page-break-after:avoid}
+ #analytics-print-report table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:10px;margin-bottom:12px}
+ #analytics-print-report th,#analytics-print-report td{border:1px solid #84958a;padding:7px 6px;text-align:right;vertical-align:middle;overflow-wrap:anywhere}
  #analytics-print-report thead{display:table-header-group}
  #analytics-print-report tr{break-inside:avoid;page-break-inside:avoid}
  #analytics-print-report th{background:#eaf0eb!important;color:#173e2c!important}
- #analytics-print-report .print-totals{margin-top:16px;border:1px solid #84958a;padding:12px;break-inside:avoid}
- #analytics-print-report .print-totals p{display:flex;justify-content:space-between;gap:12px;font-size:12px;padding:4px 0}
- #analytics-print-report .print-grand{font-weight:800;border-top:2px solid #1d5038;margin-top:7px;padding-top:9px!important}
- #analytics-print-report .print-footer{margin-top:14px;text-align:center;font-size:9px;color:#59675e}
+ #analytics-print-report .print-totals{margin-top:18px;border:1.5px solid #52745f;border-radius:7px;padding:12px;break-inside:avoid;page-break-inside:avoid}
+ #analytics-print-report .print-totals h3{font-size:13px;color:#174b34;margin:0 0 8px}
+ #analytics-print-report .print-totals p{display:flex;justify-content:space-between;gap:12px;font-size:11px;padding:5px 0;border-bottom:1px solid #e0e7e1}
+ #analytics-print-report .print-grand{font-weight:800;color:#173e2c;border-top:1.5px solid #1d5038;margin-top:7px;padding-top:9px!important}
+ #analytics-print-report .print-totals small{display:block;color:#59675e;font-size:9px;margin-top:9px}
+ #analytics-print-report .print-footer{margin-top:16px;padding-top:8px;border-top:1px solid #d5ded7;text-align:center;font-size:8px;color:#59675e}
 }
 #analytics-print-report{display:none}
 
@@ -105,7 +111,7 @@ button:disabled,[data-bamland-busy="true"]{opacity:.62;cursor:wait!important;fil
    <li>مسئول IT وجود نسخه پشتیبان مستقل و قابل بازیابی و تکمیل آرشیو را بررسی و تأیید می‌کند.</li>
    <li>فقط پس از ثبت هر دو تأیید و اطمینان از مجاز بودن نگهداری/حذف سوابق مالی، اطلاعات عملیاتی همان بازه پاک‌سازی می‌شود.</li>
   </ol>
-  <div class="it-warning"><strong>قفل ایمنی پاک‌سازی:</strong> حذف خودکار وجود ندارد. تا زمان تکمیل خروجی، بررسی مدیر، تأیید مسئول IT و تعیین تکلیف الزامات قانونی حسابداری، هیچ اطلاعاتی حذف نمی‌شود. اطلاعات دوره‌های بعدی نباید تحت تأثیر قرار گیرند.</div>
+  <div class="it-warning"><strong>قفل ایمنی و محدوده پاک‌سازی:</strong> حذف خودکار وجود ندارد. هر عملیات آینده فقط باید به رکوردهای مجازِ همان بازه تاریخیِ آرشیوشده محدود شود؛ اطلاعات دوره‌های بعدی و بخش‌های منو و قیمت‌ها، دسته‌بندی‌ها، میزها، کاربران و دسترسی‌ها، تنظیمات کافه و فایل‌ها/تصاویر Storage نباید در دامنه حذف قرار گیرند. تا زمان تکمیل خروجی، بررسی مدیر، تأیید مسئول IT و تعیین تکلیف الزامات قانونی حسابداری، هیچ اطلاعاتی حذف نمی‌شود.</div>
   <p style="margin-bottom:0">این بخش در حال حاضر دستورالعمل و ضابطه سرویس را نمایش می‌دهد؛ اجرای حذف از این صفحه فعال نشده است و برای جلوگیری از حذف ناخواسته، نیازمند طراحی و تأیید گردش‌کار امن جداگانه است.</p>
  </div>
  <div id="data-health-state" class="notice" style="margin-top:14px">برای مشاهده وضعیت، روی «به‌روزرسانی وضعیت» بزنید.</div>
@@ -124,7 +130,7 @@ button:disabled,[data-bamland-busy="true"]{opacity:.62;cursor:wait!important;fil
   <p class="notice">این صفحه حجم واقعی دیتابیس PostgreSQL و جداول عمومی را نمایش می‌دهد. سهمیه کل پلن، فضای باقی‌مانده Storage و محدودیت‌های صورتحساب از این گزارش قابل استنتاج نیست و باید جداگانه از داشبورد Supabase بررسی شود. هیچ داده‌ای از این صفحه حذف یا تغییر داده نمی‌شود.</p>
  </div>
 </section>
-<section id="accounting-view" class="view card"><h2>حسابداری و ثبت مخارج</h2><p class="notice">مخارج ثبت‌شده در گزارش‌های آنالیز و سود/زیان لحاظ می‌شوند. حذف مخارج برای مرحله تست فعال است.</p><form id="expense-form" class="fields"><label>تاریخ شمسی<input id="expense-date" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۲۶" required></label><label>عنوان هزینه<input id="expense-title" maxlength="160" placeholder="مثلاً تسویه قبض آب" required></label><label>مبلغ به تومان<input id="expense-amount" type="number" min="1" step="1" required></label><label class="wide">توضیحات (اختیاری)<textarea id="expense-details" maxlength="1000" placeholder="جزئیات هزینه، شماره قبض یا توضیحات تکمیلی"></textarea></label><div class="wide"><button class="btn" type="submit">ثبت هزینه</button></div></form><div class="line"></div><h3>مخارج ثبت‌شده</h3><div id="expenses-list" class="list"></div></section><section id="analytics-view" class="view card"><h2>آنالیز و آمار مالی</h2><p class="notice">گزارش بر اساس زمان ثبت سفارش در ساعت ایران (Asia/Tehran) محاسبه می‌شود. تعداد هر آیتم از سفارش‌های «تحویل‌شده» و «تسویه‌شده» جمع می‌شود؛ سفارش‌های لغوشده یا هنوز در جریان، جزو سرو شده‌ها نیستند.</p><div class="actions" style="margin:14px 0"><button type="button" class="btn secondary" id="analytics-today">گزارش امروز</button><button type="button" class="btn secondary" id="analytics-month">ماه جاری</button></div><form id="analytics-form" class="fields"><label>از تاریخ شمسی<input id="analytics-from" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۲۶" required></label><label>تا تاریخ شمسی<input id="analytics-to" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۲۶" required></label><div class="wide"><button class="btn" type="submit">محاسبه بازه</button></div></form><div class="actions" style="margin:12px 0"><button type="button" class="btn" id="analytics-export-pdf">چاپ / دریافت PDF گزارش</button></div><div class="line"></div><div id="analytics-summary" class="stats"></div><div id="analytics-financial-summary" class="stats" style="margin-top:10px"></div><h3>جزئیات سفارش‌های درآمدزا <small>(حذف دائمی سفارش)</small></h3><div id="analytics-orders" class="list"></div><h3>جزئیات هزینه‌ها</h3><div id="analytics-expenses" class="list"></div><h3>جمع هر آیتم در کل بازه</h3><div id="analytics-items" class="list"></div><h3>جزئیات روزانه هر آیتم</h3><div id="analytics-daily" class="list"></div><p id="analytics-note" class="notice hidden"></p></section><section id="reviews-view" class="view card"><h2>بازخورد مشتریان</h2><div id="reviews-list" class="list"></div></section>
+<section id="accounting-view" class="view card"><h2>حسابداری و ثبت مخارج</h2><p class="notice">مخارج ثبت‌شده در گزارش‌های آنالیز و سود/زیان لحاظ می‌شوند. حذف مخارج برای مرحله تست فعال است.</p><form id="expense-form" class="fields"><label>تاریخ شمسی<input id="expense-date" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۲۶" required></label><label>عنوان هزینه<input id="expense-title" maxlength="160" placeholder="مثلاً تسویه قبض آب" required></label><label>مبلغ به تومان<input id="expense-amount" type="number" min="1" step="1" required></label><label class="wide">توضیحات (اختیاری)<textarea id="expense-details" maxlength="1000" placeholder="جزئیات هزینه، شماره قبض یا توضیحات تکمیلی"></textarea></label><div class="wide"><button class="btn" type="submit">ثبت هزینه</button></div></form><div class="line"></div><h3>مخارج ثبت‌شده</h3><div id="expenses-list" class="list"></div></section><section id="analytics-view" class="view card"><h2>آنالیز و آمار مالی</h2><p class="notice">گزارش بر اساس زمان ثبت سفارش در ساعت ایران (Asia/Tehran) محاسبه می‌شود. تعداد هر آیتم از سفارش‌های «تحویل‌شده» و «تسویه‌شده» جمع می‌شود؛ سفارش‌های لغوشده یا هنوز در جریان، جزو سرو شده‌ها نیستند.</p><div class="actions" style="margin:14px 0"><button type="button" class="btn secondary" id="analytics-today">گزارش امروز</button><button type="button" class="btn secondary" id="analytics-week">۷ روز اخیر</button><button type="button" class="btn secondary" id="analytics-month">ماه جاری</button><button type="button" class="btn secondary" id="analytics-quarter">۳ ماه اخیر</button></div><form id="analytics-form" class="fields"><label>از تاریخ شمسی<input id="analytics-from" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۲۶" required></label><label>تا تاریخ شمسی<input id="analytics-to" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۲۶" required></label><div class="wide"><button class="btn" type="submit">محاسبه بازه</button></div></form><div class="actions" style="margin:12px 0"><button type="button" class="btn" id="analytics-export-pdf">چاپ / دریافت PDF گزارش</button></div><div class="line"></div><div id="analytics-summary" class="stats"></div><div id="analytics-financial-summary" class="stats" style="margin-top:10px"></div><h3>جزئیات سفارش‌های درآمدزا <small>(حذف دائمی سفارش)</small></h3><div id="analytics-orders" class="list"></div><h3>جزئیات هزینه‌ها</h3><div id="analytics-expenses" class="list"></div><h3>جمع هر آیتم در کل بازه</h3><div id="analytics-items" class="list"></div><h3>جزئیات روزانه هر آیتم</h3><div id="analytics-daily" class="list"></div><p id="analytics-note" class="notice hidden"></p></section><section id="reviews-view" class="view card"><h2>بازخورد مشتریان</h2><div id="reviews-list" class="list"></div></section>
 </section>
 </div><div class="toast" id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -330,7 +336,9 @@ async function loadAnalytics(preset="today"){
  try{
   let from,to;const today=todayJalali();
   if(preset==="today"){from=today;to=today;setAnalyticsDates(from,to)}
+  else if(preset==="week"){from=addJalaliDays(today,-6);to=today;setAnalyticsDates(from,to)}
   else if(preset==="month"){from=jalaliMonthStart(today);to=today;setAnalyticsDates(from,to)}
+  else if(preset==="quarter"){from=addJalaliDays(today,-89);to=today;setAnalyticsDates(from,to)}
   else{from=parseJalaliInput($("#analytics-from").value);to=parseJalaliInput($("#analytics-to").value)}
   const fromDate=parseJalaliInput(jalaliString(from));const toDate=parseJalaliInput(jalaliString(to));
   if(fromDate.getTime()>toDate.getTime())throw new Error("تاریخ شروع نباید بعد از تاریخ پایان باشد.");
@@ -356,19 +364,22 @@ async function loadAnalytics(preset="today"){
  }catch(error){note.textContent=errText(error);note.classList.remove("hidden");toast(errText(error))}
 }
 $("#analytics-today").addEventListener("click",()=>loadAnalytics("today"));
+$("#analytics-week").addEventListener("click",()=>loadAnalytics("week"));
 $("#analytics-month").addEventListener("click",()=>loadAnalytics("month"));
+$("#analytics-quarter").addEventListener("click",()=>loadAnalytics("quarter"));
 $("#analytics-form").addEventListener("submit",e=>{e.preventDefault();loadAnalytics("custom")});
 
 function buildAnalyticsPrintReport(report){
  if(!report)throw new Error("ابتدا بازه گزارش را محاسبه کنید.");
  const fmt=n=>new Intl.NumberFormat("fa-IR").format(Math.round(Number(n||0)));
- const rows=report.items.map((item,index)=>'<tr><td style="width:8%">'+fmt(index+1)+'</td><td style="width:42%">'+esc(item.name)+'</td><td style="width:22%">'+fmt(item.qty)+'</td><td style="width:28%">'+fmt(item.revenue)+' تومان</td></tr>').join("");
- const expenses=report.expenses.map((expense,index)=>'<tr><td>'+fmt(index+1)+'</td><td>'+esc(expense.title||"هزینه")+'</td><td>'+esc(prettyJalali(expense.expense_date+"T12:00:00Z"))+'</td><td>'+fmt(expense.amount)+' تومان</td></tr>').join("");
- return '<div class="print-title"><h1>گزارش جمع‌بندی عملکرد کافه باملند</h1><p>بازه گزارش: از '+esc(report.from)+' تا '+esc(report.to)+' · تقویم شمسی · ساعت ایران</p><p>تاریخ تهیه گزارش: '+esc(new Intl.DateTimeFormat("fa-IR",{dateStyle:"full",timeZone:"Asia/Tehran"}).format(new Date()))+'</p></div>'+
- '<h3>خلاصه فروش به تفکیک آیتم</h3><table><thead><tr><th>ردیف</th><th>نوع آیتم</th><th>تعداد فروش</th><th>جمع مبلغ آیتم</th></tr></thead><tbody>'+ (rows||'<tr><td colspan="4">در این بازه فروش ثبت‌شده‌ای وجود ندارد.</td></tr>')+'</tbody></table>'+
- '<h3 style="margin-top:18px">ریز مخارج ثبت‌شده</h3><table><thead><tr><th>ردیف</th><th>شرح هزینه</th><th>تاریخ</th><th>مبلغ</th></tr></thead><tbody>'+ (expenses||'<tr><td colspan="4">هزینه‌ای ثبت نشده است.</td></tr>')+'</tbody></table>'+
- '<div class="print-totals"><p><span>تعداد سفارش‌های تحویل‌شده / تسویه‌شده</span><strong>'+fmt(report.orderCount)+'</strong></p><p><span>جمع تعداد آیتم‌های فروخته‌شده</span><strong>'+fmt(report.itemCount)+'</strong></p><p><span>جمع کل مخارج</span><strong>'+fmt(report.expensesTotal)+' تومان</strong></p><p class="print-grand"><span>جمع کل فروش سفارش‌ها</span><strong>'+fmt(report.revenue)+' تومان</strong></p><p class="print-grand"><span>مانده پس از کسر مخارج ثبت‌شده</span><strong>'+fmt(report.net)+' تومان</strong></p></div>'+
- '<div class="print-footer">گزارش سیستمی کافه باملند · این سند بر اساس اطلاعات ثبت‌شده در بازه انتخابی تهیه شده است.</div>';
+ const rows=report.items.map((item,index)=>'<tr><td>'+fmt(index+1)+'</td><td>'+esc(item.name)+'</td><td>'+fmt(item.qty)+'</td><td>'+fmt(item.revenue)+' تومان</td></tr>').join("");
+ const expenses=report.expenses.map((expense,index)=>'<tr><td>'+fmt(index+1)+'</td><td>'+esc(expense.title||"هزینه")+'</td><td>'+esc(prettyJalali(expense.expense_date+"T12:00:00Z"))+'</td><td>'+esc(expense.details||"—")+'</td><td>'+fmt(expense.amount)+' تومان</td></tr>').join("");
+ const reportDate=new Intl.DateTimeFormat("fa-IR",{dateStyle:"full",timeZone:"Asia/Tehran"}).format(new Date());
+ return '<div class="print-title"><div class="print-brand">BAMLAND · کافه باملند</div><h1>گزارش جمع‌بندی عملکرد و فروش</h1><p class="print-period">بازه گزارش: از '+esc(report.from)+' تا '+esc(report.to)+' (تقویم شمسی)</p><p>تاریخ تهیه: '+esc(reportDate)+' · منطقه زمانی: تهران</p></div>'+
+ '<h3 class="print-section-title">۱. فروش به تفکیک نوع آیتم</h3><table class="print-table"><thead><tr><th style="width:9%">ردیف</th><th style="width:39%">نوع آیتم</th><th style="width:20%">تعداد فروش</th><th style="width:32%">جمع کل</th></tr></thead><tbody>'+(rows||'<tr><td colspan="4">در این بازه فروش ثبت‌شده‌ای وجود ندارد.</td></tr>')+'</tbody></table>'+
+ '<h3 class="print-section-title">۲. مخارج ثبت‌شده</h3><table class="print-table"><thead><tr><th style="width:8%">ردیف</th><th style="width:23%">شرح هزینه</th><th style="width:17%">تاریخ</th><th style="width:30%">توضیحات</th><th style="width:22%">مبلغ</th></tr></thead><tbody>'+(expenses||'<tr><td colspan="5">هزینه‌ای در این بازه ثبت نشده است.</td></tr>')+'</tbody></table>'+
+ '<div class="print-totals"><h3>۳. جمع‌بندی مالی دوره</h3><p><span>تعداد سفارش‌های تحویل‌شده / تسویه‌شده</span><strong>'+fmt(report.orderCount)+'</strong></p><p><span>جمع تعداد آیتم‌های فروخته‌شده</span><strong>'+fmt(report.itemCount)+' عدد</strong></p><p><span>جمع کل مخارج ثبت‌شده</span><strong>'+fmt(report.expensesTotal)+' تومان</strong></p><p class="print-grand"><span>جمع کل فروش سفارش‌ها</span><strong>'+fmt(report.revenue)+' تومان</strong></p><p class="print-grand"><span>مانده فروش پس از کسر مخارج ثبت‌شده</span><strong>'+fmt(report.net)+' تومان</strong></p><small>توجه: مانده فوق صرفاً فروش منهای مخارج ثبت‌شده است و بهای تمام‌شده مواد اولیه، حقوق و سایر هزینه‌های ثبت‌نشده را شامل نمی‌شود.</small></div>'+
+ '<div class="print-footer">گزارش سیستمی کافه باملند · مبالغ به تومان · اطلاعات بر اساس سفارش‌های تحویل‌شده و تسویه‌شده و هزینه‌های ثبت‌شده در بازه انتخابی</div>';
 }
 $("#analytics-export-pdf").addEventListener("click",()=>{
  try{
