@@ -127,7 +127,16 @@ button:disabled,[data-bamland-busy="true"]{opacity:.62;cursor:wait!important;fil
   <h3>حجم و تعداد رکوردهای جداول</h3>
   <div style="overflow-x:auto"><table class="data-health-table"><thead><tr><th>جدول</th><th>تعداد رکورد</th><th>حجم تقریبی</th></tr></thead><tbody id="data-health-table-rows"></tbody></table></div>
   <p id="data-health-measured-at" class="notice" style="margin-top:12px"></p>
-  <p class="notice">این صفحه حجم واقعی دیتابیس PostgreSQL و جداول عمومی را نمایش می‌دهد. سهمیه کل پلن، فضای باقی‌مانده Storage و محدودیت‌های صورتحساب از این گزارش قابل استنتاج نیست و باید جداگانه از داشبورد Supabase بررسی شود. هیچ داده‌ای از این صفحه حذف یا تغییر داده نمی‌شود.</p>
+  <p class="notice">این صفحه حجم واقعی دیتابیس PostgreSQL و جداول عمومی را نمایش می‌دهد. سهمیه کل پلن و فضای Storage باید جداگانه بررسی شود. بخش زیر فقط سوابق نهایی سفارش و هزینه‌های بازه انتخابی را هدف می‌گیرد؛ سفارش‌های در جریان و اطلاعات منو، قیمت‌ها، دسته‌بندی‌ها، میزها، کاربران، تنظیمات و فایل‌های Storage حذف نمی‌شوند.</p>
+  <div class="line"></div>
+  <h3>پاک‌سازی سوابق آماری یک بازه</h3>
+  <p class="notice">این عملیات برگشت‌ناپذیر است. فقط سفارش‌های «تسویه‌شده» و «لغوشده»، اقلام و بازخوردهای وابسته به آن‌ها و هزینه‌های ثبت‌شده در بازه انتخابی حذف می‌شوند. سفارش‌های «تحویل‌شده» که هنوز تسویه نشده‌اند و سایر سفارش‌های در جریان دست‌نخورده می‌مانند. پیش از ادامه، خروجی و بکاپ را خارج از دیتابیس ذخیره و با مدیریت بررسی کنید؛ الزامات قانونی نگهداری اسناد مالی نیز باید رعایت شده باشد.</p>
+  <div class="fields" style="margin-top:12px">
+   <label>از تاریخ شمسی<input id="cleanup-from" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۲۶"></label>
+   <label>تا تاریخ شمسی<input id="cleanup-to" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۲۶"></label>
+   <div class="wide actions"><button type="button" class="btn danger" id="cleanup-analytics-period">پاک‌سازی سوابق این بازه</button></div>
+  </div>
+  <p id="cleanup-result" class="notice hidden" style="margin-top:12px"></p>
  </div>
 </section>
 <section id="accounting-view" class="view card"><h2>حسابداری و ثبت مخارج</h2><p class="notice">مخارج ثبت‌شده در گزارش‌های آنالیز و سود/زیان لحاظ می‌شوند. حذف مخارج برای مرحله تست فعال است.</p><form id="expense-form" class="fields"><label>تاریخ شمسی<input id="expense-date" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۲۶" required></label><label>عنوان هزینه<input id="expense-title" maxlength="160" placeholder="مثلاً تسویه قبض آب" required></label><label>مبلغ به تومان<input id="expense-amount" type="number" min="1" step="1" required></label><label class="wide">توضیحات (اختیاری)<textarea id="expense-details" maxlength="1000" placeholder="جزئیات هزینه، شماره قبض یا توضیحات تکمیلی"></textarea></label><div class="wide"><button class="btn" type="submit">ثبت هزینه</button></div></form><div class="line"></div><h3>مخارج ثبت‌شده</h3><div id="expenses-list" class="list"></div></section><section id="analytics-view" class="view card"><h2>آنالیز و آمار مالی</h2><p class="notice">گزارش بر اساس زمان ثبت سفارش در ساعت ایران (Asia/Tehran) محاسبه می‌شود. تعداد هر آیتم از سفارش‌های «تحویل‌شده» و «تسویه‌شده» جمع می‌شود؛ سفارش‌های لغوشده یا هنوز در جریان، جزو سرو شده‌ها نیستند.</p><div class="actions" style="margin:14px 0"><button type="button" class="btn secondary" id="analytics-today">گزارش امروز</button><button type="button" class="btn secondary" id="analytics-week">۷ روز اخیر</button><button type="button" class="btn secondary" id="analytics-month">ماه جاری</button><button type="button" class="btn secondary" id="analytics-quarter">۳ ماه اخیر</button></div><form id="analytics-form" class="fields"><label>از تاریخ شمسی<input id="analytics-from" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۲۶" required></label><label>تا تاریخ شمسی<input id="analytics-to" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۲۶" required></label><div class="wide"><button class="btn" type="submit">محاسبه بازه</button></div></form><div class="actions" style="margin:12px 0"><button type="button" class="btn" id="analytics-export-pdf">چاپ / دریافت PDF گزارش</button></div><div class="line"></div><div id="analytics-summary" class="stats"></div><div id="analytics-financial-summary" class="stats" style="margin-top:10px"></div><h3>جزئیات سفارش‌های درآمدزا <small>(حذف دائمی سفارش)</small></h3><div id="analytics-orders" class="list"></div><h3>جزئیات هزینه‌ها</h3><div id="analytics-expenses" class="list"></div><h3>جمع هر آیتم در کل بازه</h3><div id="analytics-items" class="list"></div><h3>جزئیات روزانه هر آیتم</h3><div id="analytics-daily" class="list"></div><p id="analytics-note" class="notice hidden"></p></section><section id="reviews-view" class="view card"><h2>بازخورد مشتریان</h2><div id="reviews-list" class="list"></div></section>
@@ -264,6 +273,29 @@ async function loadDataHealth(){
  finally{if(button)button.disabled=false}
 }
 $("#refresh-data-health").addEventListener("click",loadDataHealth);
+$("#cleanup-analytics-period").addEventListener("click",async()=>{
+ const button=$("#cleanup-analytics-period"),result=$("#cleanup-result");
+ if(!currentUser||button.disabled)return;
+ try{
+  const from=parseJalaliInput($("#cleanup-from").value),to=parseJalaliInput($("#cleanup-to").value);
+  if(from.getTime()>to.getTime())throw new Error("تاریخ شروع نباید بعد از تاریخ پایان باشد.");
+  const fromSql=from.toISOString().slice(0,10),toSql=to.toISOString().slice(0,10);
+  const period=$("#cleanup-from").value.trim()+" تا "+$("#cleanup-to").value.trim();
+  if(!confirm("تأیید اول — آیا از تمام اطلاعات این بازه خروجی و بکاپ کامل تهیه کرده‌اید، فایل‌ها را خارج از دیتابیس نگهداری کرده‌اید و صحت آن را بررسی کرده‌اید؟\n\nبازه: "+period+"\n\nدر صورت نبود بکاپ معتبر، «لغو» را بزنید."))return;
+  if(!confirm("تأیید دوم — آیا مسئول IT اکنون حضور دارد و همراه مدیریت محدوده و مجوز پاک‌سازی را تأیید کرده است؟\n\nبا زدن «تأیید»، حذف دائمی آغاز می‌شود و قابل بازگشت نیست."))return;
+  button.disabled=true;const old=button.textContent;button.textContent="در حال پاک‌سازی امن…";result.classList.add("hidden");
+  try{
+   const report=await must(await client.rpc("cleanup_admin_analytics_period",{p_start_date:fromSql,p_end_date:toSql,p_backup_confirmed:true,p_it_present:true}));
+   const fmt=n=>new Intl.NumberFormat("fa-IR").format(Number(n||0));
+   result.textContent="پاک‌سازی بازه "+period+" انجام شد. سفارش: "+fmt(report.deleted_orders)+"، اقلام سفارش: "+fmt(report.deleted_order_items)+"، بازخورد: "+fmt(report.deleted_reviews)+"، هزینه: "+fmt(report.deleted_expenses)+". سفارش‌های در جریان و اطلاعات تنظیمات و منو حذف نشدند.";
+   result.classList.remove("hidden");toast("پاک‌سازی سوابق انتخاب‌شده انجام شد.");
+   await Promise.all([loadDataHealth(),loadOrders(),loadExpenses(),loadReviews()]);
+   updateStats();
+   if($("#analytics-view").classList.contains("active"))await loadAnalytics("custom");
+  }catch(error){throw error}
+  finally{button.disabled=false;button.textContent=old}
+ }catch(error){toast("پاک‌سازی انجام نشد: "+errText(error))}
+});
 
 async function loadAll(){await Promise.all([loadCategories(),loadItems(),loadTables(),loadOrders(),loadSettings(),loadReviews(),loadExpenses()]);renderManualSelectors();renderManualTableOptions();renderManualCart();updateStats();$("#expense-date").value=jalaliString(todayJalali());await loadAnalytics("today")}
 async function loadCategories(){categories=await must(await client.from("menu_categories").select("*").order("sort_order"));$("#item-category").innerHTML=categories.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name_fa||c.name)+'</option>').join("");$("#categories-list").innerHTML=categories.map(c=>'<article class="category-admin-card"><div class="category-admin-info"><strong>'+esc(c.name_fa||c.name)+' · '+esc(c.name)+'</strong><small>'+esc(c.subtitle||"بدون توضیح")+' <span class="meta-sep">·</span> ترتیب '+esc(c.sort_order)+' <span class="meta-sep">·</span> '+(c.is_active?"فعال":"غیرفعال")+'</small></div><div class="actions"><button class="btn secondary" data-cat-edit="'+c.id+'">ویرایش</button><button class="btn secondary" data-cat-toggle="'+c.id+'">'+(c.is_active?"غیرفعال‌کردن":"فعال‌کردن")+'</button><button class="btn danger" data-cat-delete="'+c.id+'">حذف</button></div></article>').join("")||'<p>دسته‌بندی‌ای وجود ندارد.</p>'}
@@ -321,7 +353,7 @@ function jalaliParts(date=new Date()){const p=Object.fromEntries(jalaliFmt.forma
 function pad2(n){return String(n).padStart(2,"0")}
 function jalaliString(p){return p.y+"/"+pad2(p.m)+"/"+pad2(p.d)}
 function toEnglishDigits(s){return String(s).replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d)).replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/-/g,"/").trim()}
-function parseJalaliInput(value){const m=toEnglishDigits(value).match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);if(!m)throw new Error("تاریخ را به شکل سال/ماه/روز شمسی وارد کن؛ مثل ۱۴۰۵/۰۷/۲۶.");const p={y:+m[1],m:+m[2],d:+m[3]};if(p.y<1300||p.y>1500||p.m<1||p.m>12||p.d<1||p.d>31)throw new Error("تاریخ شمسی معتبر نیست.");const start=jalaliYearStart(p.y);const offset=(p.m<=6?(p.m-1)*31:186+(p.m-7)*30)+(p.d-1);const date=new Date(start.getTime()+offset*86400000);const actual=jalaliUtcFmt.formatToParts(date);const a=Object.fromEntries(actual.filter(x=>x.type!=="literal").map(x=>[x.type,Number(x.value)]));if(a.year!==p.y||a.month!==p.m||a.day!==p.d)throw new Error("این روز در تقویم شمسی معتبر نیست.");return date}
+function parseJalaliInput(value){const normalized=toEnglishDigits(value).replace(/\s+/g,"");const m=normalized.match(/^(\d{4})[\/.-](\d{1,2})[\/.-](\d{1,2})$/);if(!m)throw new Error("تاریخ را به شکل سال/ماه/روز شمسی وارد کن؛ مثل ۱۴۰۵/۰۷/۲۶.");const p={y:+m[1],m:+m[2],d:+m[3]};if(p.y<1300||p.y>1500||p.m<1||p.m>12||p.d<1||p.d>31)throw new Error("تاریخ شمسی معتبر نیست.");const start=jalaliYearStart(p.y);const offset=(p.m<=6?(p.m-1)*31:186+(p.m-7)*30)+(p.d-1);const date=new Date(start.getTime()+offset*86400000);const actual=jalaliUtcFmt.formatToParts(date);const a=Object.fromEntries(actual.filter(x=>x.type!=="literal").map(x=>[x.type,Number(x.value)]));if(a.year!==p.y||a.month!==p.m||a.day!==p.d)throw new Error("این روز در تقویم شمسی معتبر نیست.");return date}
 function jalaliYearStart(jy){const gy=jy+621;for(let day=19;day<=22;day++){const d=new Date(Date.UTC(gy,2,day));const p=Object.fromEntries(jalaliUtcFmt.formatToParts(d).filter(x=>x.type!=="literal").map(x=>[x.type,Number(x.value)]));if(p.year===jy&&p.month===1&&p.day===1)return d}throw new Error("تبدیل تاریخ شمسی ناموفق بود.")}
 function addUtcDays(date,days){return new Date(date.getTime()+days*86400000)}
 function tehranBoundary(date){return new Date(Date.UTC(date.getUTCFullYear(),date.getUTCMonth(),date.getUTCDate())-210*60000).toISOString()}
