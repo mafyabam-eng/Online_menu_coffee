@@ -16,7 +16,7 @@ button:disabled,[data-bamland-busy="true"]{opacity:.62;cursor:wait!important;fil
 
 /* افزایش اندازه و خوانایی پنل مدیریت */
 .item strong{font-size:15px}.item small{font-size:13px;line-height:1.9}.status{font-size:12px}.order-heading strong{font-size:16px!important}.order-total{font-size:14px}.order-items{font-size:15px!important;line-height:2!important}.order-details{font-size:12px!important}.order-note{font-size:13px!important}.order-metric{font-size:12px}.order-metric b{font-size:13px}.order-actions select,.order-actions .btn{font-size:13px;min-height:38px}.order-card{padding:14px 16px}.report-row strong{font-size:15px}.report-row small{font-size:13px}
-.manual-order-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.manual-cart-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}.manual-cart-row .grow{min-width:0}.manual-cart-row small{display:block;color:var(--muted);margin-top:4px}.manual-qty{display:flex;align-items:center;gap:7px;flex-shrink:0}.manual-qty button{width:30px;height:30px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--gold);font-weight:700}.manual-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}.manual-summary>div{padding:12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}.manual-summary small{display:block;color:var(--muted);font-size:11px}.manual-summary strong{display:block;margin-top:5px;color:var(--gold2);font-size:14px}@media(max-width:640px){.manual-order-grid,.manual-summary{grid-template-columns:1fr}.manual-cart-row{align-items:flex-start;flex-direction:column}.manual-qty{align-self:flex-end}}\n</style>
+.manual-order-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.manual-cart-row{display:flex;align-items:center;justify-content:flex-start;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}.manual-cart-row .grow{min-width:0;flex:0 1 auto}.manual-cart-row small{display:block;color:var(--muted);margin-top:4px}.manual-qty{display:flex;align-items:center;gap:7px;flex-shrink:0;margin-inline-start:12px}.manual-qty button{width:30px;height:30px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--gold);font-weight:700}.manual-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}.manual-summary>div{padding:12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}.manual-summary small{display:block;color:var(--muted);font-size:11px}.manual-summary strong{display:block;margin-top:5px;color:var(--gold2);font-size:14px}@media(max-width:640px){.manual-order-grid,.manual-summary{grid-template-columns:1fr}.manual-cart-row{align-items:flex-start;flex-direction:column}.manual-qty{align-self:flex-end}}\n</style>
 </head>
 <body>
 <div class="wrap">
@@ -162,9 +162,15 @@ $("#manual-submit").addEventListener("click",async()=>{
  if(button.disabled)return;
  button.disabled=true;const old=button.textContent;button.textContent="در حال ثبت سفارش…";
  try{
-  await must(await client.rpc("create_manual_order",{p_table_id:tableId,p_items:manualCart.map(x=>({menu_item_id:x.id,quantity:x.quantity}))}));
-  manualCart=[];renderManualCart();await Promise.all([loadOrders(),loadTables()]);updateStats();
-  $("#tabs button[data-view='orders-view']").click();toast("سفارش دستی ثبت شد و به صف سفارش‌ها اضافه شد");
+  const result=await must(await client.rpc("create_manual_order",{p_table_id:tableId,p_items:manualCart.map(x=>({menu_item_id:x.id,quantity:x.quantity}))}));
+  const createdOrderId=result?.order?.id;
+  if(!createdOrderId)throw new Error("شناسه سفارش از پایگاه داده دریافت نشد");
+  await Promise.all([refreshAfterSave(loadOrders),refreshAfterSave(loadTables)]);
+  if(!orders.some(order=>order.id===createdOrderId))throw new Error("سفارش در پایگاه داده ثبت شد اما در فهرست سفارش‌ها قابل مشاهده نیست؛ صفحه را تازه‌سازی و وضعیت را بررسی کن");
+  const selectedTable=tables.find(table=>table.id===tableId);
+  if(selectedTable?.is_available)throw new Error("سفارش ثبت شد اما وضعیت میز هنوز آزاد است؛ از ثبت سفارش مجدد برای این میز خودداری کن");
+  manualCart=[];renderManualCart();updateStats();
+  $("#tabs button[data-view='orders-view']").click();toast("سفارش دستی ثبت شد و در صف سفارش‌ها قابل مشاهده است");
  }catch(error){
   const message=errText(error);
   if(message.includes("table_unavailable"))toast("این میز دیگر آزاد نیست؛ یک میز دیگر انتخاب کن");
@@ -199,7 +205,7 @@ function renderManualSelectors(){
 function renderManualCart(){
  const list=$("#manual-cart-list");if(!list)return;
  const subtotal=manualCart.reduce((sum,x)=>sum+x.price*x.quantity,0),percent=Number(settings?.menu_discount_percent||0),discount=Math.round(subtotal*percent/100),total=Math.max(0,subtotal-discount);
- list.innerHTML=manualCart.map(x=>'<article class="manual-cart-row"><div class="grow"><strong>'+esc(x.name)+'</strong><small>'+money(x.price)+' · جمع: '+money(x.price*x.quantity)+'</small></div><div class="manual-qty"><button type="button" data-manual-dec="'+esc(x.id)+'" aria-label="کاهش تعداد">−</button><strong>'+new Intl.NumberFormat("fa-IR").format(x.quantity)+'</strong><button type="button" data-manual-inc="'+esc(x.id)+'" aria-label="افزایش تعداد">+</button><button type="button" class="btn danger" data-manual-remove="'+esc(x.id)+'">حذف</button></div></article>').join("")||'<p>هنوز محصولی به سفارش اضافه نشده است.</p>';
+ list.innerHTML=manualCart.map(x=>'<article class="manual-cart-row"><div class="grow"><strong>'+esc(x.name)+'</strong><small>'+money(x.price)+' · جمع: '+money(x.price*x.quantity)+'</small></div><div class="manual-qty"><button type="button" class="btn danger" data-manual-remove="'+esc(x.id)+'">حذف</button><button type="button" data-manual-dec="'+esc(x.id)+'" aria-label="کاهش تعداد">−</button><strong>'+new Intl.NumberFormat("fa-IR").format(x.quantity)+'</strong><button type="button" data-manual-inc="'+esc(x.id)+'" aria-label="افزایش تعداد">+</button></div></article>').join("")||'<p>هنوز محصولی به سفارش اضافه نشده است.</p>';
  $("#manual-subtotal").textContent=money(subtotal);$("#manual-discount").textContent=money(discount);$("#manual-total").textContent=money(total);
  $("#manual-submit").disabled=!manualCart.length||!$("#manual-table").value;
 }
