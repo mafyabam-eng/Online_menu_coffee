@@ -386,10 +386,13 @@ function buildAnalyticsPrintReport(report){
 $("#analytics-export-pdf").addEventListener("click",()=>{
  try{
   const report=buildAnalyticsPrintReport(lastAnalyticsReport);
-  let printRoot=$("#analytics-print-report");
-  if(!printRoot){printRoot=document.createElement("div");printRoot.id="analytics-print-report";document.body.appendChild(printRoot)}
-  printRoot.innerHTML=report;
-  window.print();
+  const printWindow=window.open("","_blank");
+  if(!printWindow)throw new Error("پنجره چاپ باز نشد؛ اجازه باز شدن پنجره‌های جدید را در مرورگر فعال کنید.");
+  const documentHtml='<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>گزارش مالی کافه باملند</title><style>'+
+  '@page{size:A4;margin:14mm 12mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;color:#17251d;font-family:BadrLocal,Vazirmatn,Tahoma,sans-serif;font-size:11px;line-height:1.9}body{direction:rtl;-webkit-print-color-adjust:exact;print-color-adjust:exact}.report{width:100%;margin:0 auto}.print-title{text-align:center;border-bottom:2px solid #1d5038;padding:0 0 12px;margin:0 0 16px}.print-brand{font-size:11px;letter-spacing:1px;color:#52745f;font-weight:700}.print-title h1{font-size:20px;color:#174b34;margin:3px 0 7px}.print-title p{font-size:10px;margin:4px 0;color:#39483f}.print-period{font-size:13px!important;font-weight:700;color:#173e2c!important}.print-section-title{font-size:13px;color:#174b34;margin:18px 0 8px;break-after:avoid-page;page-break-after:avoid}table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:10px;margin:0 0 12px}th,td{border:1px solid #84958a;padding:7px 6px;text-align:right;vertical-align:middle;overflow-wrap:anywhere}thead{display:table-header-group}tfoot{display:table-footer-group}tr{break-inside:avoid;page-break-inside:avoid}th{background:#eaf0eb!important;color:#173e2c!important;font-weight:800}.print-totals{margin-top:18px;border:1.5px solid #52745f;border-radius:7px;padding:12px;break-inside:avoid;page-break-inside:avoid}.print-totals h3{font-size:13px;color:#174b34;margin:0 0 8px}.print-totals p{display:flex;justify-content:space-between;gap:12px;font-size:11px;padding:5px 0;margin:0;border-bottom:1px solid #e0e7e1}.print-grand{font-weight:800;color:#173e2c;border-top:1.5px solid #1d5038;margin-top:7px!important;padding-top:9px!important}.print-totals small{display:block;color:#59675e;font-size:9px;margin-top:9px}.print-footer{margin-top:16px;padding-top:8px;border-top:1px solid #d5ded7;text-align:center;font-size:8px;color:#59675e}@media screen{body{padding:24px;background:#eef2ee}.report{max-width:800px;padding:28px;background:#fff;box-shadow:0 3px 20px #0001}}'+
+  '</style></head><body><main class="report">'+report+'</main></body></html>';
+  printWindow.document.open();printWindow.document.write(documentHtml);printWindow.document.close();
+  printWindow.onload=()=>{printWindow.focus();printWindow.print()};
  }catch(error){toast(errText(error))}
 });
 
