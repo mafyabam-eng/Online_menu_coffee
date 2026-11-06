@@ -143,6 +143,7 @@ $("#manual-add-item").addEventListener("click",()=>{
  if(!item){toast("ابتدا یک محصول معتبر انتخاب کن");return}
  if(!Number.isInteger(quantity)||quantity<1||quantity>20){toast("تعداد باید بین ۱ تا ۲۰ باشد");return}
  const existing=manualCart.find(x=>x.id===id),next=(existing?.quantity||0)+quantity;
+ if(!existing&&manualCart.length>=30){toast("حداکثر ۳۰ محصول متفاوت در هر سفارش قابل ثبت است");return}
  if(next>20){toast("حداکثر تعداد هر محصول ۲۰ عدد است");return}
  if(existing)existing.quantity=next;else manualCart.push({id:item.id,name:item.name,price:Number(item.price),serving_minutes:Number(item.serving_minutes||0),quantity});
  $("#manual-quantity").value="1";renderManualCart();toast("محصول به سفارش اضافه شد");
