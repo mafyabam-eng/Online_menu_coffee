@@ -590,7 +590,7 @@ function startOrderPolling(qrToken,sessionToken){
    }
    if(!data.active&&!data.order){handleDeletedCustomerOrder(qrToken)}
   }catch(e){console.warn("Order status refresh failed",e)}
- },12000);
+ },30000);
 }
 async function checkForExistingOrder(){
  let saved=null;try{saved=JSON.parse(localStorage.getItem("bamland-active-order")||"null")}catch{}
