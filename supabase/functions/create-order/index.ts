@@ -86,6 +86,7 @@ Deno.serve(async (req: Request) => {
         if (message.includes(code)) return reply(req, 409, { error: code });
       }
       if (message.includes("menu_item_unavailable")) return reply(req, 400, { error: "menu_item_unavailable" });
+      if (message.includes("table_unavailable")) return reply(req, 400, { error: "table_unavailable" });
       if (message.includes("invalid_items")) return reply(req, 400, { error: "invalid_items" });
       throw error;
     }
