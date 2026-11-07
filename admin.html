@@ -341,6 +341,73 @@ function renderManualCart(){
  $("#manual-submit").disabled=!manualCart.length||!$("#manual-table").value;
 }
 
+
+async function loadLedgerCustomers(){
+ const [customers,transactions]=await Promise.all([
+  must(await client.from("ledger_customers").select("*").order("created_at",{ascending:false})),
+  must(await client.from("ledger_transactions").select("*").order("created_at",{ascending:false}).limit(2000))
+ ]);
+ ledgerCustomers=customers.map(customer=>{
+  const rows=transactions.filter(tx=>tx.customer_id===customer.id);
+  const balance=rows.reduce((sum,tx)=>sum+(tx.transaction_type==="order_charge"?Number(tx.amount):-Number(tx.amount)),0);
+  return {...customer,balance,transactions:rows};
+ });
+ const list=$("#ledger-customers-list");
+ const fmt=n=>new Intl.NumberFormat("fa-IR").format(Math.round(Number(n||0)));
+ if(list)list.innerHTML=ledgerCustomers.map(c=>'<article class="item" style="align-items:flex-start"><div class="grow"><strong>'+esc(c.first_name+" "+c.last_name)+' · کد '+esc(c.code)+'</strong><small>مانده بدهی: <b style="color:var(--gold)">'+money(c.balance)+'</b></small><div class="fields" style="margin-top:10px"><label>مبلغ پرداختی<input type="number" min="1" step="1" data-ledger-payment-amount="'+c.id+'" placeholder="مبلغ به تومان"></label><label>توضیح (اختیاری)<input maxlength="160" data-ledger-payment-note="'+c.id+'" placeholder="توضیح پرداخت"></label><div class="actions" style="align-items:end"><button class="btn" data-ledger-pay="'+c.id+'" '+(c.balance<=0?"disabled":"")+'>ثبت پرداخت</button><button class="btn danger" data-ledger-delete="'+c.id+'">حذف حساب</button></div></div><details style="margin-top:10px"><summary>جزئیات گردش حساب ('+fmt(c.transactions.length)+' رکورد)</summary><div class="list" style="margin-top:8px">'+(c.transactions.map(tx=>'<div class="report-row"><div><strong>'+(tx.transaction_type==="order_charge"?"ثبت سفارش دفتری":"پرداخت بدهی")+'</strong><small>'+esc(tx.description||"بدون توضیح")+' · '+new Date(tx.created_at).toLocaleString("fa-IR")+'</small></div><strong class="report-number">'+(tx.transaction_type==="order_charge"?"+":"−")+money(tx.amount)+'</strong></div>').join("")||"<small>گردش حسابی ثبت نشده است.</small>")+'</div></details></div></article>').join("")||"<p>هنوز مشتری حساب دفتری ثبت نشده است.</p>";
+}
+$("#ledger-customer-form").addEventListener("submit",async e=>{
+ e.preventDefault();
+ const button=e.currentTarget.querySelector('button[type="submit"]');
+ const first=$("#ledger-first-name").value.trim(),last=$("#ledger-last-name").value.trim(),code=toEnglishDigits($("#ledger-code").value).trim();
+ if(!first||!last||!(/^\d{4}$/).test(code)){toast("نام، نام خانوادگی و کد یکتای چهاررقمی را کامل وارد کنید.");return}
+ button.disabled=true;
+ try{await must(await client.from("ledger_customers").insert({first_name:first,last_name:last,code}));e.currentTarget.reset();await loadLedgerCustomers();await loadOrders();toast("مشتری به حساب دفتری اضافه شد")}
+ catch(error){toast(String(error.message||error).includes("duplicate key")?"این کد چهاررقمی قبلاً ثبت شده است.":errText(error))}
+ finally{button.disabled=false}
+});
+$("#refresh-ledger").addEventListener("click",()=>loadLedgerCustomers().catch(error=>toast(errText(error))));
+$("#ledger-customers-list").addEventListener("click",async e=>{
+ const pay=e.target.closest("[data-ledger-pay]");
+ if(pay){
+  const id=pay.dataset.ledgerPay;
+  const amount=Number(document.querySelector('[data-ledger-payment-amount="'+id+'"]').value||0);
+  const note=document.querySelector('[data-ledger-payment-note="'+id+'"]').value||"";
+  if(!Number.isFinite(amount)||amount<=0){toast("مبلغ پرداختی معتبر وارد کنید.");return}
+  pay.disabled=true;
+  try{await must(await client.rpc("record_ledger_payment",{p_customer_id:id,p_amount:amount,p_description:note}));await loadLedgerCustomers();toast("پرداخت ثبت شد و از بدهی مشتری کسر شد")}
+  catch(error){toast(String(error.message||error).includes("payment_exceeds_balance")?"مبلغ پرداختی از بدهی باقی‌مانده بیشتر است.":errText(error))}
+  finally{pay.disabled=false}
+  return;
+ }
+ const del=e.target.closest("[data-ledger-delete]");
+ if(del){
+  const customer=ledgerCustomers.find(c=>c.id===del.dataset.ledgerDelete);if(!customer)return;
+  if(customer.balance>0){toast("این مشتری بدهی باقی‌مانده دارد و قابل حذف نیست.");return}
+  if(!confirm("حساب دفتری «"+customer.first_name+" "+customer.last_name+"» و گردش مالی آن به‌طور کامل حذف شود؟"))return;
+  del.disabled=true;
+  try{await must(await client.rpc("delete_ledger_customer",{p_customer_id:customer.id}));await loadLedgerCustomers();await loadOrders();toast("حساب دفتری حذف شد")}
+  catch(error){toast(errText(error))}
+  finally{del.disabled=false}
+ }
+});
+function renderManualOpenOrders(){
+ const list=$("#manual-orders-list");if(!list)return;
+ const active=orders.filter(o=>o.is_manual&&!["settled","cancelled"].includes(o.status));
+ list.innerHTML=active.map(o=>'<article class="item"><div class="grow"><strong>'+esc(o.cafe_tables?.name||"میز نامشخص")+' · '+money(o.total)+'</strong><small>'+(o.order_items||[]).map(i=>esc(i.item_name)+" × "+new Intl.NumberFormat("fa-IR").format(i.quantity)+" · "+money(i.line_total)).join(" | ")+'</small></div><button class="btn secondary" data-edit-manual-order="'+o.id+'">ویرایش اقلام</button></article>').join("")||"<p>سفارش دستیِ تسویه‌نشده‌ای وجود ندارد.</p>";
+}
+$("#manual-orders-list").addEventListener("click",e=>{
+ const b=e.target.closest("[data-edit-manual-order]");if(!b)return;
+ const order=orders.find(o=>o.id===b.dataset.editManualOrder);
+ if(!order||!order.is_manual||["settled","cancelled"].includes(order.status)){toast("این سفارش دیگر قابل ویرایش نیست.");return}
+ if((order.order_items||[]).some(i=>!i.menu_item_id)){toast("یکی از اقلام این سفارش دیگر در منو موجود نیست؛ امکان ویرایش خودکار آن وجود ندارد.");return}
+ manualEditingOrderId=order.id;
+ manualCart=(order.order_items||[]).map(i=>({id:i.menu_item_id,name:i.item_name,price:Number(i.unit_price),quantity:Number(i.quantity),serving_minutes:Number(i.serving_minutes||0)}));
+ const select=$("#manual-table");select.innerHTML='<option value="'+esc(order.table_id)+'">'+esc(order.cafe_tables?.name||"میز سفارش")+'</option>';select.value=order.table_id;select.disabled=true;
+ renderManualCart();toast("اقلام سفارش را تغییر دهید و ذخیره ویرایش را بزنید.");
+ window.scrollTo({top:0,behavior:"smooth"});
+});
+
 async function loadOrders(){
  orders=await must(await client.from("orders").select("*,cafe_tables(name),order_items(*)").order("created_at",{ascending:false}).limit(500));
  const visibleOrders=orders.filter(o=>!["settled","cancelled"].includes(o.status));
