@@ -28,3 +28,5 @@ end;
 $$;
 revoke all on function public.consume_order_rate_limit(text,timestamptz) from public,anon,authenticated;
 grant execute on function public.consume_order_rate_limit(text,timestamptz) to service_role;
+
+grant delete on table public.order_rate_limits to service_role;
