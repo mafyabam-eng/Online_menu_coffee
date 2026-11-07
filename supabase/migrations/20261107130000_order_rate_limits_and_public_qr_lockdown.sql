@@ -6,3 +6,6 @@ create table if not exists public.order_rate_limits (
 );
 alter table public.order_rate_limits enable row level security;
 revoke all privileges on public.order_rate_limits from public,anon,authenticated;
+
+revoke select on public.cafe_tables from anon;
+grant select (id,name,sort_order,is_active,is_available) on public.cafe_tables to anon;
