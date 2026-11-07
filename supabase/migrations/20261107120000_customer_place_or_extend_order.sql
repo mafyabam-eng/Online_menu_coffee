@@ -35,6 +35,7 @@ begin
      or (x->>'quantity')::integer not between 1 and 20
  ) then raise exception 'invalid_items' using errcode='22023'; end if;
 
+ perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(p_session_token::text,0));
  select * into v_table from public.cafe_tables where id=p_table_id for update;
  if not found or not v_table.is_active then raise exception 'table_unavailable' using errcode='22023'; end if;
 
