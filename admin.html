@@ -412,6 +412,20 @@ $("#manual-orders-list").addEventListener("click",e=>{
  window.scrollTo({top:0,behavior:"smooth"});
 });
 
+
+function printOrderInvoice(order){
+ const fmt=n=>new Intl.NumberFormat("fa-IR").format(Math.round(Number(n||0)));
+ const rows=(order.order_items||[]).map(i=>'<tr><td>'+esc(i.item_name)+'</td><td>'+fmt(i.quantity)+'</td><td>'+fmt(i.unit_price)+'</td><td>'+fmt(i.line_total)+'</td></tr>').join("");
+ const receipt='<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8"><title>فاکتور باملند</title><style>body{font-family:Tahoma,sans-serif;color:#18251d;padding:20px}h2{text-align:center}table{width:100%;border-collapse:collapse}td,th{border:1px solid #999;padding:8px;text-align:right}.total{font-weight:bold;margin-top:16px}</style><body><h2>فاکتور کافه باملند</h2><p>میز: '+esc(order.cafe_tables?.name||"—")+' · '+new Date(order.created_at).toLocaleString("fa-IR")+'</p><table><thead><tr><th>شرح</th><th>تعداد</th><th>قیمت واحد</th><th>جمع</th></tr></thead><tbody>'+rows+'</tbody></table><p>جمع جزء: '+money(order.subtotal)+'</p><p>تخفیف منو: '+money(order.menu_discount_amount)+'</p><p>تخفیف اختصاصی ('+fmt(order.order_discount_percent)+'٪): '+money(order.order_discount_amount)+'</p><p class="total">مبلغ نهایی: '+money(order.total)+'</p><p>روش تسویه: '+(order.settlement_method==="ledger"?"حساب دفتری":"تسویه عادی")+'</p>'+(order.settlement_method==="ledger"?'<p>مشتری: '+esc(order.ledger_customer_name||"—")+' · مبلغ به بدهی حساب اضافه شد.</p>':"")+'</body></html>';
+ const w=window.open("","_blank");if(!w){toast("اجازه باز شدن پنجره چاپ را فعال کنید.");return}
+ let started=false;const startPrint=()=>{if(started||w.closed)return;started=true;w.focus();setTimeout(()=>{if(!w.closed)w.print()},250)};
+ w.addEventListener("load",startPrint,{once:true});w.document.open();w.document.write(receipt);w.document.close();setTimeout(startPrint,1000);
+}
+$("#settled-orders-list").addEventListener("click",e=>{
+ const b=e.target.closest("[data-print-order]");if(!b)return;
+ const order=orders.find(o=>o.id===b.dataset.printOrder);if(order)printOrderInvoice(order);
+});
+
 async function loadOrders(){
  orders=await must(await client.from("orders").select("*,cafe_tables(name),order_items(*)").order("created_at",{ascending:false}).limit(500));
  const visibleOrders=orders.filter(o=>!["settled","cancelled"].includes(o.status));
