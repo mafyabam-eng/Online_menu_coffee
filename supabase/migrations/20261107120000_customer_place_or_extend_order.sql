@@ -34,6 +34,11 @@ begin
      or coalesce(x->>'quantity','') !~ '^[0-9]+$'
      or (x->>'quantity')::integer not between 1 and 20
  ) then raise exception 'invalid_items' using errcode='22023'; end if;
+ if exists(
+  select 1 from jsonb_array_elements(p_items) x
+  group by (x->>'menu_item_id')::uuid
+  having sum((x->>'quantity')::integer)>20
+ ) then raise exception 'invalid_items' using errcode='22023'; end if;
 
  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(p_session_token::text,0));
  select * into v_table from public.cafe_tables where id=p_table_id for update;
@@ -73,6 +78,9 @@ begin
    select * into v_existing from public.order_items
     where order_id=v_order.id and menu_item_id=v_menu.id for update;
    if found then
+    if v_existing.quantity+v_item.quantity>20 then
+     raise exception 'invalid_items' using errcode='22023';
+    end if;
     update public.order_items set
       item_name=v_menu.name,unit_price=v_menu.price,
       quantity=v_existing.quantity+v_item.quantity,
