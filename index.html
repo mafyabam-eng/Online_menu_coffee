@@ -365,6 +365,18 @@ async function supabaseGet(path){
 }
 async function loadLiveMenu(){
  try{
+  // Render the last public menu snapshot immediately; the live request below always refreshes it.
+  try{
+   const cached=JSON.parse(localStorage.getItem("bamland-public-menu-cache-v1")||"null");
+   if(cached?.categories?.length){
+    categories.splice(0,categories.length,...cached.categories);
+    menuDiscountPercent=Number(cached.discount||0);
+    active=categories.some(c=>c.id===cached.active)?cached.active:categories[0].id;
+    const cachedTitle=document.getElementById("welcome-title");
+    if(cachedTitle){cachedTitle.textContent=cached.welcome||"به بام‌لند خوش آمدید";cachedTitle.style.visibility="visible"}
+    renderCategories();renderProducts();updateCart();
+   }
+  }catch(cacheError){console.warn("Cached menu unavailable",cacheError)}
   const [categoryRows,itemRows,settingsRows]=await Promise.all([
    supabaseGet("menu_categories?select=id,name,name_fa,icon,subtitle,sort_order,is_active&is_active=eq.true&order=sort_order.asc"),
    supabaseGet("menu_items?select=id,category_id,name,description,price,serving_minutes,image_url,sort_order,is_active&is_active=eq.true&order=sort_order.asc"),
@@ -385,6 +397,7 @@ async function loadLiveMenu(){
   if(!mapped.length)return;
   categories.splice(0,categories.length,...mapped);
   active=categories[0].id;
+  try{localStorage.setItem("bamland-public-menu-cache-v1",JSON.stringify({categories:mapped,discount:menuDiscountPercent,welcome:welcomeMessage,active,version:1,updatedAt:Date.now()}))}catch(cacheError){console.warn("Could not cache public menu",cacheError)}
   renderCategories();renderProducts();updateCart();
  }catch(error){const welcomeTitle=document.getElementById("welcome-title");if(welcomeTitle){welcomeTitle.textContent="به بام‌لند خوش آمدید";welcomeTitle.style.visibility="visible";}console.warn("Live menu unavailable; demo menu remains visible.",error);}
 }
