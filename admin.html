@@ -355,11 +355,14 @@ async function loadLedgerCustomers(){
   must(await client.from("ledger_customers").select("*").order("created_at",{ascending:false})),
   must(await client.from("ledger_transactions").select("*").order("created_at",{ascending:false}).limit(2000))
  ]);
- ledgerCustomers=customers.map(customer=>{
-  const rows=transactions.filter(tx=>tx.customer_id===customer.id);
-  const balance=rows.reduce((sum,tx)=>sum+(tx.transaction_type==="order_charge"?Number(tx.amount):-Number(tx.amount)),0);
-  return {...customer,balance,transactions:rows};
- });
+ const transactionsByCustomer=new Map();
+ const balancesByCustomer=new Map();
+ for(const tx of transactions){
+  if(!transactionsByCustomer.has(tx.customer_id))transactionsByCustomer.set(tx.customer_id,[]);
+  transactionsByCustomer.get(tx.customer_id).push(tx);
+  balancesByCustomer.set(tx.customer_id,(balancesByCustomer.get(tx.customer_id)||0)+(tx.transaction_type==="order_charge"?Number(tx.amount):-Number(tx.amount)));
+ }
+ ledgerCustomers=customers.map(customer=>({...customer,balance:balancesByCustomer.get(customer.id)||0,transactions:transactionsByCustomer.get(customer.id)||[]}));
  const list=$("#ledger-customers-list");
  const fmt=n=>new Intl.NumberFormat("fa-IR").format(Math.round(Number(n||0)));
  if(list)list.innerHTML=ledgerCustomers.map(c=>'<article class="item" style="align-items:flex-start"><div class="grow"><strong>'+esc(c.first_name+" "+c.last_name)+' · کد '+esc(c.code)+'</strong><small>مانده بدهی: <b style="color:var(--gold)">'+money(c.balance)+'</b></small><div class="fields" style="margin-top:10px"><label>مبلغ پرداختی<input type="number" min="1" step="1" data-ledger-payment-amount="'+c.id+'" placeholder="مبلغ به تومان"></label><label>توضیح (اختیاری)<input maxlength="160" data-ledger-payment-note="'+c.id+'" placeholder="توضیح پرداخت"></label><div class="actions" style="align-items:end"><button class="btn" data-ledger-pay="'+c.id+'" '+(c.balance<=0?"disabled":"")+'>ثبت پرداخت</button><button class="btn danger" data-ledger-delete="'+c.id+'">حذف حساب</button></div></div><details style="margin-top:10px"><summary>جزئیات گردش حساب ('+fmt(c.transactions.length)+' رکورد)</summary><div class="list" style="margin-top:8px">'+(c.transactions.map(tx=>'<div class="report-row"><div><strong>'+(tx.transaction_type==="order_charge"?"ثبت سفارش دفتری":"پرداخت بدهی")+'</strong><small>'+esc(tx.description||"بدون توضیح")+' · '+new Date(tx.created_at).toLocaleString("fa-IR")+'</small></div><strong class="report-number">'+(tx.transaction_type==="order_charge"?"+":"−")+money(tx.amount)+'</strong></div>').join("")||"<small>گردش حسابی ثبت نشده است.</small>")+'</div></details></div></article>').join("")||"<p>هنوز مشتری حساب دفتری ثبت نشده است.</p>";
