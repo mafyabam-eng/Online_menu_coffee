@@ -586,8 +586,58 @@ async function releaseTableIfNoActiveOrders(tableId){
  const active=await must(await client.from("orders").select("id").eq("table_id",tableId).not("status","in","(settled,cancelled)").limit(1));
  if(!active?.length)await must(await client.from("cafe_tables").update({is_available:true}).eq("id",tableId));
 }
-$("#orders-list").addEventListener("change",async e=>{const s=e.target.closest("[data-status]");if(!s)return;try{const patch={status:s.value,updated_at:new Date().toISOString()};if(s.value==="settled")patch.settled_at=new Date().toISOString();await must(await client.from("orders").update(patch).eq("id",s.dataset.status));await loadOrders();await loadTables();updateStats();if(s.value==="settled"||$("#analytics-view").classList.contains("active"))await loadAnalytics("custom");toast(s.value==="settled"?"سفارش تسویه شد؛ از فهرست سفارش‌ها خارج و در آمار فروش ثبت شد.":"وضعیت سفارش تغییر کرد")}catch(e){toast(errText(e));await loadOrders()}});
-$("#orders-list").addEventListener("click",async e=>{const b=e.target.closest("[data-delete-order]");if(!b||!confirm("این سفارش، اقلام و بازخوردهای وابسته برای همیشه از پایگاه داده پاک شوند؟ این کار قابل بازگشت نیست."))return;b.disabled=true;const id=b.dataset.deleteOrder;try{const orderRow=await must(await client.from("orders").select("table_id").eq("id",id).maybeSingle());await must(await client.from("reviews").delete().eq("order_id",id));await must(await client.from("order_items").delete().eq("order_id",id));const removed=await must(await client.from("orders").delete().eq("id",id).select("id"));if(!removed?.length)throw new Error("سفارش حذف نشد؛ دسترسی مدیر یا وضعیت ورود را بررسی کنید.");await releaseTableIfNoActiveOrders(orderRow?.table_id);await loadOrders();await loadTables();updateStats();if($("#analytics-view").classList.contains("active"))await loadAnalytics("custom");toast("سفارش به‌طور کامل از پایگاه داده حذف شد")}catch(e){toast("حذف انجام نشد: "+errText(e));b.disabled=false}});
+$("#orders-list").addEventListener("change",async e=>{
+ const s=e.target.closest("[data-status]");if(!s)return;
+ try{await must(await client.from("orders").update({status:s.value,updated_at:new Date().toISOString()}).eq("id",s.dataset.status));await loadOrders();await loadTables();updateStats();toast("وضعیت سفارش تغییر کرد")}
+ catch(error){toast(errText(error));await loadOrders()}
+});
+$("#orders-list").addEventListener("click",async e=>{
+ const discountButton=e.target.closest("[data-set-order-discount],[data-remove-order-discount]");
+ if(discountButton){
+  const id=discountButton.dataset.setOrderDiscount||discountButton.dataset.removeOrderDiscount;
+  const input=document.querySelector('[data-order-discount-value="'+id+'"]');
+  const percent=discountButton.dataset.removeOrderDiscount!==undefined?0:Number(input?.value);
+  if(!Number.isFinite(percent)||percent<0||percent>100){toast("درصد تخفیف باید بین صفر تا ۱۰۰ باشد.");return}
+  discountButton.disabled=true;
+  try{await must(await client.rpc("set_order_discount",{p_order_id:id,p_percent:percent}));await loadOrders();toast(percent>0?"تخفیف سفارش اعمال شد":"تخفیف سفارش حذف شد")}
+  catch(error){toast(errText(error))}
+  finally{discountButton.disabled=false}
+  return;
+ }
+ const settleButton=e.target.closest("[data-settle-order]");
+ if(settleButton){
+  const id=settleButton.dataset.settleOrder,card=settleButton.closest(".order-card");
+  const method=card?.querySelector("[data-settlement-method]")?.value||"cash";
+  const customerId=card?.querySelector("[data-ledger-customer]")?.value||null;
+  if(method==="ledger"&&!customerId){toast("برای تسویه قرضی، مشتری دفتری را انتخاب کنید.");return}
+  if(!confirm(method==="ledger"?"مبلغ این سفارش به بدهی مشتری انتخاب‌شده اضافه شود؟":"تسویه عادی این سفارش ثبت شود؟"))return;
+  settleButton.disabled=true;
+  try{
+   await must(await client.rpc("settle_order",{p_order_id:id,p_method:method,p_customer_id:method==="ledger"?customerId:null}));
+   await Promise.all([loadOrders(),loadTables(),loadLedgerCustomers()]);updateStats();
+   if($("#analytics-view").classList.contains("active"))await loadAnalytics("custom");
+   toast(method==="ledger"?"سفارش به حساب دفتری مشتری اضافه شد":"سفارش تسویه شد");
+  }catch(error){toast(errText(error))}
+  finally{settleButton.disabled=false}
+  return;
+ }
+ const printButton=e.target.closest("[data-print-order]");
+ if(printButton){
+  const order=orders.find(o=>o.id===printButton.dataset.printOrder);if(!order)return;
+  const fmt=n=>new Intl.NumberFormat("fa-IR").format(Math.round(Number(n||0)));
+  const rows=(order.order_items||[]).map(i=>'<tr><td>'+esc(i.item_name)+'</td><td>'+fmt(i.quantity)+'</td><td>'+fmt(i.unit_price)+'</td><td>'+fmt(i.line_total)+'</td></tr>').join("");
+  const receipt='<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8"><title>فاکتور باملند</title><style>body{font-family:Tahoma,sans-serif;color:#18251d;padding:20px}h2{text-align:center}table{width:100%;border-collapse:collapse}td,th{border:1px solid #999;padding:8px;text-align:right}.total{font-weight:bold;margin-top:16px}</style><body><h2>فاکتور کافه باملند</h2><p>میز: '+esc(order.cafe_tables?.name||"—")+' · '+new Date(order.created_at).toLocaleString("fa-IR")+'</p><table><thead><tr><th>شرح</th><th>تعداد</th><th>قیمت واحد</th><th>جمع</th></tr></thead><tbody>'+rows+'</tbody></table><p>جمع جزء: '+money(order.subtotal)+'</p><p>تخفیف منو: '+money(order.menu_discount_amount)+'</p><p>تخفیف اختصاصی ('+fmt(order.order_discount_percent)+'٪): '+money(order.order_discount_amount)+'</p><p class="total">مبلغ نهایی: '+money(order.total)+'</p><p>روش تسویه: '+(order.settlement_method==="ledger"?"حساب دفتری":"تسویه عادی")+'</p>'+(order.settlement_method==="ledger"?'<p>مشتری: '+esc(order.ledger_customer_name||"—")+' · مبلغ به بدهی حساب اضافه شد.</p>':"")+'</body></html>';
+  const w=window.open("","_blank");if(!w){toast("اجازه باز شدن پنجره چاپ را فعال کنید.");return}
+  let started=false;const startPrint=()=>{if(started||w.closed)return;started=true;w.focus();setTimeout(()=>{if(!w.closed)w.print()},250)};
+  w.addEventListener("load",startPrint,{once:true});w.document.open();w.document.write(receipt);w.document.close();setTimeout(startPrint,1000);
+  return;
+ }
+ const b=e.target.closest("[data-delete-order]");
+ if(!b||!confirm("این سفارش، اقلام و بازخوردهای وابسته برای همیشه از پایگاه داده پاک شوند؟ این کار قابل بازگشت نیست."))return;
+ b.disabled=true;const id=b.dataset.deleteOrder;
+ try{const orderRow=await must(await client.from("orders").select("table_id").eq("id",id).maybeSingle());await must(await client.from("reviews").delete().eq("order_id",id));await must(await client.from("order_items").delete().eq("order_id",id));const removed=await must(await client.from("orders").delete().eq("id",id).select("id"));if(!removed?.length)throw new Error("سفارش حذف نشد؛ دسترسی مدیر یا وضعیت ورود را بررسی کنید.");await releaseTableIfNoActiveOrders(orderRow?.table_id);await loadOrders();await loadTables();updateStats();if($("#analytics-view").classList.contains("active"))await loadAnalytics("custom");toast("سفارش به‌طور کامل از پایگاه داده حذف شد")}
+ catch(error){toast("حذف انجام نشد: "+errText(error));b.disabled=false}
+});
 $("#refresh-orders").addEventListener("click",async()=>{try{await loadOrders();await loadTables();updateStats();toast("سفارش‌ها به‌روز شدند")}catch(e){toast(errText(e))}});
 let adminAudioContext=null;
 const orderReminderLastAt=new Map();
