@@ -51,6 +51,16 @@ button:disabled,[data-bamland-busy="true"]{opacity:.62;cursor:wait!important;fil
 }
 #analytics-print-report{display:none}
 
+/* Give the discount and settlement cards the full action-row width on mobile. */
+@media(max-width:620px){
+ .order-card{grid-template-columns:minmax(0,1fr)}
+ .order-actions{grid-template-columns:repeat(2,minmax(0,1fr));width:100%}
+ .order-actions .order-discount-control,.order-actions .order-settlement-control{width:100%;min-width:0;padding:10px;gap:8px;grid-column:span 1}
+ .order-actions .order-discount-control label,.order-actions .order-settlement-control label{font-size:12px;line-height:1.7}
+ .order-actions .order-discount-control input,.order-actions .order-settlement-control select{width:100%;min-height:40px;padding:8px;font-size:13px}
+ .order-actions .order-discount-control .btn,.order-actions .order-settlement-control .btn{width:100%;min-height:38px;padding:8px;font-size:12px}
+}
+
 </style>
 </head>
 <body>
