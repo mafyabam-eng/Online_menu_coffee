@@ -5,14 +5,17 @@ function corsHeaders(req: Request) {
   const configured = Deno.env.get("ALLOWED_ORIGIN")?.split(",").map(x => x.trim()).filter(Boolean) ?? [];
   if (!configured.length) console.warn("ALLOWED_ORIGIN is not configured; temporarily allowing all origins");
   const origin = req.headers.get("origin") ?? "";
-  const allowed = configured.length ? configured.includes(origin) : true;
-  return {
-    "Access-Control-Allow-Origin": configured.length ? (allowed ? origin : "null") : "*",
+  const allowed = configured.length ? (!origin || configured.includes(origin)) : true;
+  const headers: Record<string, string> = {
     "Access-Control-Allow-Headers": allowedHeaders,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Content-Type": "application/json; charset=utf-8",
     "Vary": "Origin",
   };
+  if (!configured.length) headers["Access-Control-Allow-Origin"] = "*";
+  else if (origin && allowed) headers["Access-Control-Allow-Origin"] = origin;
+  else if (origin) headers["Access-Control-Allow-Origin"] = "null";
+  return headers;
 }
 function reply(req: Request, status: number, body: unknown) {
   return new Response(JSON.stringify(body), { status, headers: corsHeaders(req) });
