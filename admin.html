@@ -254,7 +254,7 @@ $("#manual-submit").addEventListener("click",async()=>{
   await Promise.all([refreshAfterSave(loadOrders),refreshAfterSave(loadTables)]);
   if(!orders.some(order=>order.id===createdOrderId))throw new Error("سفارش در پایگاه داده ثبت شد اما در فهرست سفارش‌ها قابل مشاهده نیست؛ صفحه را تازه‌سازی و وضعیت را بررسی کن");
   const selectedTable=tables.find(table=>table.id===tableId);
-  if(selectedTable?.is_available)throw new Error("سفارش ثبت شد اما وضعیت میز هنوز آزاد است؛ از ثبت سفارش مجدد برای این میز خودداری کن");
+  if(!manualEditingOrderId&&selectedTable?.is_available)throw new Error("سفارش ثبت شد اما وضعیت میز هنوز آزاد است؛ از ثبت سفارش مجدد برای این میز خودداری کن");
   manualCart=[];manualEditingOrderId=null;$("#manual-table").disabled=false;$("#manual-table").value="";$("#manual-cancel-edit").classList.add("hidden");$("#manual-submit").textContent="ثبت سفارش دستی";renderManualCart();updateStats();
   if($("#manual-order-view").classList.contains("active")){await loadOrders();await loadTables();renderManualOpenOrders();toast("تغییرات سفارش دستی ذخیره شد")}else{$("#tabs button[data-view='orders-view']").click();toast("سفارش دستی ثبت شد و در صف سفارش‌ها قابل مشاهده است")}
  }catch(error){
