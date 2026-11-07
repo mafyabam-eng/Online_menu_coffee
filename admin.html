@@ -247,15 +247,16 @@ $("#manual-submit").addEventListener("click",async()=>{
  if(button.disabled)return;
  button.disabled=true;const old=button.textContent;button.textContent="در حال ثبت سفارش…";
  try{
-  const result=await must(await client.rpc("create_manual_order",{p_table_id:tableId,p_items:manualCart.map(x=>({menu_item_id:x.id,quantity:x.quantity}))}));
-  const createdOrderId=result?.order?.id;
+  let createdOrderId=manualEditingOrderId;
+  if(manualEditingOrderId){await must(await client.rpc("save_manual_order_items",{p_order_id:manualEditingOrderId,p_items:manualCart.map(x=>({menu_item_id:x.id,quantity:x.quantity}))}));}
+  else{const result=await must(await client.rpc("create_manual_order",{p_table_id:tableId,p_items:manualCart.map(x=>({menu_item_id:x.id,quantity:x.quantity}))}));createdOrderId=result?.order?.id;}
   if(!createdOrderId)throw new Error("شناسه سفارش از پایگاه داده دریافت نشد");
   await Promise.all([refreshAfterSave(loadOrders),refreshAfterSave(loadTables)]);
   if(!orders.some(order=>order.id===createdOrderId))throw new Error("سفارش در پایگاه داده ثبت شد اما در فهرست سفارش‌ها قابل مشاهده نیست؛ صفحه را تازه‌سازی و وضعیت را بررسی کن");
   const selectedTable=tables.find(table=>table.id===tableId);
   if(selectedTable?.is_available)throw new Error("سفارش ثبت شد اما وضعیت میز هنوز آزاد است؛ از ثبت سفارش مجدد برای این میز خودداری کن");
-  manualCart=[];renderManualCart();updateStats();
-  $("#tabs button[data-view='orders-view']").click();toast("سفارش دستی ثبت شد و در صف سفارش‌ها قابل مشاهده است");
+  manualCart=[];manualEditingOrderId=null;$("#manual-table").disabled=false;$("#manual-table").value="";$("#manual-cancel-edit").classList.add("hidden");$("#manual-submit").textContent="ثبت سفارش دستی";renderManualCart();updateStats();
+  if($("#manual-order-view").classList.contains("active")){await loadOrders();await loadTables();renderManualOpenOrders();toast("تغییرات سفارش دستی ذخیره شد")}else{$("#tabs button[data-view='orders-view']").click();toast("سفارش دستی ثبت شد و در صف سفارش‌ها قابل مشاهده است")}
  }catch(error){
   const message=errText(error);
   if(message.includes("table_unavailable"))toast("این میز دیگر آزاد نیست؛ یک میز دیگر انتخاب کن");
@@ -338,6 +339,8 @@ function renderManualCart(){
  const subtotal=manualCart.reduce((sum,x)=>sum+x.price*x.quantity,0),percent=Number(settings?.menu_discount_percent||0),discount=Math.round(subtotal*percent/100),total=Math.max(0,subtotal-discount);
  list.innerHTML=manualCart.map(x=>'<article class="manual-cart-row"><div class="grow"><strong>'+esc(x.name)+'</strong><small>'+money(x.price)+' · جمع: '+money(x.price*x.quantity)+'</small></div><div class="manual-qty"><button type="button" class="btn danger" data-manual-remove="'+esc(x.id)+'">حذف</button><button type="button" data-manual-dec="'+esc(x.id)+'" aria-label="کاهش تعداد">−</button><strong>'+new Intl.NumberFormat("fa-IR").format(x.quantity)+'</strong><button type="button" data-manual-inc="'+esc(x.id)+'" aria-label="افزایش تعداد">+</button></div></article>').join("")||'<p>هنوز محصولی به سفارش اضافه نشده است.</p>';
  $("#manual-subtotal").textContent=money(subtotal);$("#manual-discount").textContent=money(discount);$("#manual-total").textContent=money(total);
+ $("#manual-submit").textContent=manualEditingOrderId?"ذخیره ویرایش سفارش":"ثبت سفارش دستی";
+ $("#manual-cancel-edit").classList.toggle("hidden",!manualEditingOrderId);
  $("#manual-submit").disabled=!manualCart.length||!$("#manual-table").value;
 }
 
@@ -423,6 +426,7 @@ async function loadOrders(){
   const itemsText=(o.order_items||[]).map(i=>esc(i.item_name)+" × "+fmt(i.quantity)).join("، ");
   return '<article class="item order-card"><div class="order-main"><div class="order-heading"><strong>میز: '+esc(o.cafe_tables?.name||"نامشخص")+'</strong><span class="status '+esc(o.status)+'">'+esc(labels[o.status]||o.status)+'</span></div><div class="order-total">جمع کل: '+money(o.total)+'</div><div class="order-items"><b>سفارش:</b> '+(itemsText||"اقلام سفارش موجود نیست")+'</div><div class="order-details">تاریخ و ساعت: '+new Date(o.created_at).toLocaleString("fa-IR")+'</div>'+(o.customer_note?'<div class="order-note">یادداشت سفارش: '+esc(o.customer_note)+'</div>':'')+'<div class="order-metrics"><span class="order-metric">گذشته: <b>'+ageText+'</b></span><span class="order-metric">انتظار اولیه: <b>'+fmt(estimated)+' د</b></span>'+(isOpen?'<span class="order-metric">باقی‌مانده: <b>'+fmt(remaining)+' د</b></span>':'')+'</div></div><div class="actions order-actions"><select data-status="'+o.id+'" aria-label="تغییر وضعیت سفارش">'+Object.entries(labels).filter(([v])=>v!=="settled").map(([v,l])=>'<option value="'+v+'" '+(v===o.status?"selected":"")+' >'+l+'</option>').join("")+'<option value="settled">تسویه‌شده</option></select><button class="btn danger" data-delete-order="'+o.id+'">حذف سفارش</button></div></article>'
  }).join("")||'<p>سفارش بازی وجود ندارد؛ سفارش‌های تسویه‌شده در آنالیز فروش محاسبه می‌شوند.</p>';
+ renderManualOpenOrders();
 }async function loadSettings(){settings=await must(await client.from("cafe_settings").select("*").eq("id",true).single());$("#welcome-message").value=settings.welcome_message;$("#discount").value=settings.menu_discount_percent}
 async function loadReviews(){const data=await must(await client.from("reviews").select("*").order("created_at",{ascending:false}).limit(500));$("#reviews-list").innerHTML=data.map(r=>'<article class="item"><div class="grow"><strong>امتیاز: '+esc(r.rating??"ثبت نشده")+' از ۵</strong><small>'+esc(r.message||"بدون متن")+' · '+new Date(r.created_at).toLocaleString("fa-IR")+'</small></div><div class="actions"><button class="btn danger" data-delete-review="'+r.id+'">حذف نظر</button></div></article>').join("")||'<p>هنوز بازخوردی ثبت نشده است.</p>'}
 $("#reviews-list").addEventListener("click",async e=>{const button=e.target.closest("[data-delete-review]");if(!button)return;if(!confirm("این نظر برای همیشه حذف شود؟"))return;button.disabled=true;try{await must(await client.from("reviews").delete().eq("id",button.dataset.deleteReview));await loadReviews();toast("نظر حذف شد")}catch(error){toast(errText(error));button.disabled=false}});
