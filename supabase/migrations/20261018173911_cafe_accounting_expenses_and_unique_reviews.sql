@@ -16,9 +16,3 @@ create policy "admin manages cafe expenses case insensitive"
  using (lower((select auth.jwt()->>'email'))='coffeebamland@gmail.com')
  with check (lower((select auth.jwt()->>'email'))='coffeebamland@gmail.com');
 grant select,insert,update,delete on public.cafe_expenses to authenticated;
-do $$
-begin
- if not exists(select 1 from pg_publication_tables where pubname='supabase_realtime' and schemaname='public' and tablename='cafe_expenses') then
-  alter publication supabase_realtime add table public.cafe_expenses;
- end if;
-end $$;
