@@ -419,7 +419,7 @@ if(liveClient){
  const debounceLive=(key,fn,delay=250)=>{const prop="__"+key;if(window[prop])clearTimeout(window[prop]);window[prop]=setTimeout(fn,delay)};
  liveClient.channel("bamland-live-menu")
   .on("postgres_changes",{event:"*",schema:"public",table:"cafe_tables"},()=>debounceLive("tableLiveRefresh",()=>loadAvailableTables().catch(console.warn),200))
-  .on("postgres_changes",{event:"*",schema:"public",table:"orders"},()=>debounceLive("orderLiveRefresh",async()=>{const saved=JSON.parse(localStorage.getItem("bamland-active-order")||"null");if(saved?.qr_token&&saved?.session_token){try{const d=await requestOrderStatus(saved.qr_token,saved.session_token);if(d.active&&d.owned)renderOrderStatus(d);else if(d.order)renderOrderStatus(d)}catch(e){console.warn("Live order refresh failed",e)}}loadAvailableTables().catch(console.warn)},200))
+  .on("postgres_changes",{event:"*",schema:"public",table:"orders"},()=>debounceLive("orderLiveRefresh",async()=>{const saved=JSON.parse(localStorage.getItem("bamland-active-order")||"null");if(saved?.qr_token&&saved?.session_token){try{const d=await requestOrderStatus(saved.qr_token,saved.session_token);if(d.active&&d.owned)renderOrderStatus(d);else if(d.order)renderOrderStatus(d);else if(!d.active&&!d.order)handleDeletedCustomerOrder(saved.qr_token)}catch(e){console.warn("Live order refresh failed",e)}}loadAvailableTables().catch(console.warn)},200))
   .on("postgres_changes",{event:"*",schema:"public",table:"menu_items"},()=>debounceLive("menuLiveRefresh",()=>loadLiveMenu(),400))
   .on("postgres_changes",{event:"*",schema:"public",table:"menu_categories"},()=>debounceLive("categoryLiveRefresh",()=>loadLiveMenu(),400))
   .on("postgres_changes",{event:"*",schema:"public",table:"cafe_settings"},()=>debounceLive("settingsLiveRefresh",()=>loadLiveMenu(),400))
@@ -501,16 +501,16 @@ const memorySymbolPool=["☕","🌿","🧋","🍰","🍪","🪴","🍓","🥐","
 function shuffleCards(){const pairs=Math.min(10,3+memoryLevel);memorySymbols=memorySymbolPool.slice(0,pairs);memoryDeck=[...memorySymbols,...memorySymbols].sort(()=>Math.random()-.5);memoryOpen=[];memoryMatched=[];memoryMoves=0;memoryLocked=false;memoryGameOver=false;memoryStageSeconds=20+Math.max(0,pairs-3)*3;memoryDeadline=Date.now()+memoryStageSeconds*1000;renderMemoryGame()}
 function renderMemoryGame(){
  const cols=memoryDeck.length<=8?4:memoryDeck.length<=12?4:5;$("#memory-game").style.gridTemplateColumns="repeat("+cols+",minmax(0,1fr))";
- $("#memory-game").innerHTML=memoryDeck.map((symbol,i)=>'<button type="button" data-memory-card="'+i+'" aria-label="کارت '+(memoryMatched.includes(i)||memoryOpen.includes(i)?symbol:"بسته")+'" style="min-height:52px;border:1px solid var(--line);border-radius:12px;background:'+(memoryMatched.includes(i)?"#285b43":"#123b2b")+';color:var(--cream);font-size:23px">'+(memoryMatched.includes(i)||memoryOpen.includes(i)?symbol:"✦")+'</button>').join("");
+ $("#memory-game").innerHTML=memoryDeck.map((symbol,i)=>'<button type="button" data-memory-card="'+i+'" '+(memoryGameOver?'disabled aria-disabled="true"':"")+' aria-label="کارت '+(memoryMatched.includes(i)||memoryOpen.includes(i)?symbol:"بسته")+'" style="min-height:52px;border:1px solid var(--line);border-radius:12px;background:'+(memoryMatched.includes(i)?"#285b43":"#123b2b")+';color:var(--cream);font-size:23px;'+(memoryGameOver?'opacity:.5;cursor:not-allowed;':'')+'">'+(memoryMatched.includes(i)||memoryOpen.includes(i)?symbol:"✦")+'</button>').join("");
  const pairs=memorySymbols.length,done=memoryMatched.length===memoryDeck.length;
  if(done){memoryDeadline=0;$("#memory-game-timer").textContent="مرحله با موفقیت تمام شد!";$("#memory-game-timer").classList.remove("urgent")}$("#memory-game-status").textContent=memoryGameOver?"زمان تمام شد! بازی از مرحلهٔ اول شروع می‌شود.":done?"آفرین! مرحله "+new Intl.NumberFormat("fa-IR").format(memoryLevel)+" را کامل کردی. برای رفتن به مرحله بعد دکمه زیر را بزن.":"مرحله "+new Intl.NumberFormat("fa-IR").format(memoryLevel)+" · حرکت‌ها: "+new Intl.NumberFormat("fa-IR").format(memoryMoves)+" · جفت‌ها: "+new Intl.NumberFormat("fa-IR").format(memoryMatched.length/2)+" از "+new Intl.NumberFormat("fa-IR").format(pairs);
  $("#memory-game-reset").textContent=memoryGameOver?"شروع دوباره از مرحلهٔ اول":done?"مرحله بعد ← "+new Intl.NumberFormat("fa-IR").format(Math.min(10,3+memoryLevel+1)*2)+" کارت":"شروع دوباره مرحله";
 }
 $("#memory-game").addEventListener("click",e=>{
- const button=e.target.closest("[data-memory-card]");if(!button||memoryLocked)return;
+ const button=e.target.closest("[data-memory-card]");if(!button||memoryLocked||memoryGameOver||!memoryDeadline||Date.now()>=memoryDeadline)return;
  const i=Number(button.dataset.memoryCard);if(memoryOpen.includes(i)||memoryMatched.includes(i))return;
  memoryOpen.push(i);renderMemoryGame();
- if(memoryOpen.length===2){memoryMoves++;const [a,b]=memoryOpen;if(memoryDeck[a]===memoryDeck[b]){memoryMatched.push(a,b);memoryOpen=[];renderMemoryGame()}else{memoryLocked=true;setTimeout(()=>{memoryOpen=[];memoryLocked=false;renderMemoryGame()},700)}}
+ if(memoryOpen.length===2){memoryMoves++;const [a,b]=memoryOpen;if(memoryDeck[a]===memoryDeck[b]){memoryMatched.push(a,b);memoryOpen=[];renderMemoryGame()}else{memoryLocked=true;setTimeout(()=>{memoryOpen=[];memoryLocked=memoryGameOver||!memoryDeadline||Date.now()>=memoryDeadline;renderMemoryGame()},700)}}
 });
 $("#memory-game-reset").addEventListener("click",()=>{if(memoryGameOver)memoryLevel=1;else if(memoryMatched.length===memoryDeck.length)memoryLevel++;shuffleCards()});setInterval(()=>{if(!memoryDeadline||memoryGameOver)return;const left=Math.max(0,Math.ceil((memoryDeadline-Date.now())/1000));const timer=$("#memory-game-timer");timer.textContent="زمان باقی‌مانده: "+new Intl.NumberFormat("fa-IR").format(left)+" ثانیه";timer.classList.toggle("urgent",left<=8);if(left===0){memoryGameOver=true;memoryDeadline=0;memoryLevel=1;memoryOpen=[];memoryMatched=[];memoryLocked=true;renderMemoryGame()}},250);shuffleCards();
 function lockFeedbackForm(orderId,message){
@@ -558,6 +558,19 @@ function finishSettledCustomerOrder(qrToken){
  toast("سفارش تسویه شد؛ می‌توانید برای میز آزاد دیگری سفارش جدید ثبت کنید.");
  loadAvailableTables();
 }
+function handleDeletedCustomerOrder(qrToken){
+ if(window.bamlandOrderPoll){clearInterval(window.bamlandOrderPoll);window.bamlandOrderPoll=null}
+ localStorage.removeItem("bamland-session:"+qrToken);
+ const saved=JSON.parse(localStorage.getItem("bamland-active-order")||"null");
+ if(saved?.qr_token===qrToken)localStorage.removeItem("bamland-active-order");
+ currentCustomerOrder=null;
+ $("#order-title").textContent="سفارش توسط کافه حذف شد";
+ $("#order-summary").innerHTML='<div class="notice">مدیریت کافه این سفارش را حذف کرده است. میز آزاد شده و می‌توانید سفارش تازه‌ای ثبت کنید.</div><button class="primary" id="start-new-order" style="margin-top:12px">بازگشت به منو و سفارش جدید</button>';
+ $("#start-new-order").addEventListener("click",()=>{$("#order-overlay").classList.remove("open");document.body.style.overflow="";loadAvailableTables()});
+ $("#order-overlay").classList.add("open");document.body.style.overflow="hidden";
+ toast("سفارش شما توسط مدیریت حذف شد؛ میز آزاد است.");
+ loadAvailableTables();
+}
 function startOrderPolling(qrToken,sessionToken){
  if(window.bamlandOrderPoll)clearInterval(window.bamlandOrderPoll);
  window.bamlandOrderPoll=setInterval(async()=>{
@@ -575,15 +588,7 @@ function startOrderPolling(qrToken,sessionToken){
     $("#order-summary").insertAdjacentHTML("beforeend",'<button class="primary" id="start-new-order" style="margin-top:12px">بازگشت به منو و سفارش جدید</button>');
     $("#start-new-order").addEventListener("click",()=>{ $("#order-overlay").classList.remove("open");document.body.style.overflow="";loadAvailableTables(); });
    }
-   if(!data.active&&!data.order){
-    clearInterval(window.bamlandOrderPoll);window.bamlandOrderPoll=null;
-    localStorage.removeItem("bamland-session:"+qrToken);
-    if(saved?.qr_token===qrToken)localStorage.removeItem("bamland-active-order");
-    currentCustomerOrder=null;
-    $("#order-title").textContent="سفارش دیگر فعال نیست";
-    $("#order-summary").innerHTML='<div class="notice">این سفارش از طرف کافه بسته یا حذف شده است. می‌توانید به منو برگردید و سفارش تازه‌ای ثبت کنید.</div><button class="primary" id="start-new-order" style="margin-top:12px">بازگشت به منو و سفارش جدید</button>';
-    $("#start-new-order").addEventListener("click",()=>{ $("#order-overlay").classList.remove("open");document.body.style.overflow="";loadAvailableTables(); });
-   }
+   if(!data.active&&!data.order){handleDeletedCustomerOrder(qrToken)}
   }catch(e){console.warn("Order status refresh failed",e)}
  },12000);
 }
