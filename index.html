@@ -367,6 +367,10 @@ async function loadLiveMenu(){
  try{
   // Apply the last known welcome message immediately, before waiting for network requests.
   try{
+   const cachedWelcome=localStorage.getItem("bamland-welcome-cache-v1");
+   if(cachedWelcome){const welcomeTitle=document.getElementById("welcome-title");if(welcomeTitle)welcomeTitle.textContent=cachedWelcome;}
+  }catch(welcomeCacheError){console.warn("Cached welcome message unavailable",welcomeCacheError)}
+  try{
    const cached=JSON.parse(localStorage.getItem("bamland-public-menu-cache-v1")||"null");
    if(cached?.categories?.length){
     categories.splice(0,categories.length,...cached.categories);
@@ -384,12 +388,14 @@ async function loadLiveMenu(){
     const welcomeMessage=String(rows?.[0]?.welcome_message||"به بام‌لند خوش آمدید").trim()||"به بام‌لند خوش آمدید";
     const welcomeTitle=document.getElementById("welcome-title");
     if(welcomeTitle)welcomeTitle.textContent=welcomeMessage;
+    try{localStorage.setItem("bamland-welcome-cache-v1",welcomeMessage)}catch(cacheError){console.warn("Could not cache welcome message",cacheError)}
     return {rows,welcomeMessage};
    })
    .catch(error=>{
     console.warn("Welcome settings unavailable; using cached/default message.",error);
     return {rows:[],welcomeMessage:document.getElementById("welcome-title")?.textContent||"به بام‌لند خوش آمدید"};
    });
+  window.bamlandWelcomeSettingsPromise=settingsPromise;
   const [categoryRows,itemRows]=await Promise.all([
    supabaseGet("menu_categories?select=id,name,name_fa,icon,subtitle,sort_order,is_active&is_active=eq.true&order=sort_order.asc"),
    supabaseGet("menu_items?select=id,category_id,name,description,price,serving_minutes,image_url,sort_order,is_active&is_active=eq.true&order=sort_order.asc")
@@ -653,7 +659,11 @@ checkForExistingOrder();
 
 const welcomeScreen = document.getElementById("welcome-screen");
 if (welcomeScreen) {
-  window.setTimeout(() => {
+  window.setTimeout(async () => {
+    const welcomeSettingsReady=window.bamlandWelcomeSettingsPromise;
+    if(welcomeSettingsReady){
+      await Promise.race([welcomeSettingsReady,new Promise(resolve=>window.setTimeout(resolve,2200))]);
+    }
     welcomeScreen.classList.add("leaving");
     window.setTimeout(() => welcomeScreen.remove(), 950);
   }, 3200);
